@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="wrapper">
+
+    <!-- Sidebar -->
+    <div class="sidebar col-sm-2">
+      <ul>
+        <li><a href="{{ url_for('analysis_emotion',file_key = file_key) }}">Emotional Support</a></li><br/>
+        <li><a class="active" href="{{ url_for('analysis_organization',file_key = file_key) }}">Classroom Organization</a></li><br/>
+        <li><a href="{{ url_for('analysis_instruction',file_key = file_key) }}">Instructional Support</a></li><br/>
+      </ul>
+    </div>
+
+    <!-- Page Content -->
+    <div class="side-content col-sm-10">
+        <div class = "row" style="font-size:30px; text-align:center">
+            {{ class_info.Teacher }}'s Grade {{ class_info.Grade }} {{ class_info.Subject }} Class on {{ class_info.Date }}
+        </div>
+
+        <div class="row" style="margin-bottom:100px;">
+            <center>
+                <div id="chart_time">
+                </div>
+            </center>
+        </div>
+
+        <div class="row" style="margin-bottom:50px;">
+            <center>
+               <div id="chart_proportion">
+               </div>
+            </center>
+        </div>
+
+        <div class="row">
+            <!-- text bos for pause data -->
+            <div class="col-md-6">
+                <div class="chart-title">
+                Pause by Question Type and Person Answering (in Seconds)
+                </div>
+                <br>
+                <table id="occurrence-table" align="center">
+                    <tbody>
+                    <tr>
+                        <th colspan="1"> Teacher's Question Type </th>
+                        <th> Answered by Teacher </th>
+                        <th> Answered by Student </th>
+                    </tr>
+                    <tr>
+                        <th colspan="1"> Yes-No </th>
+                        <td rowspan="1"> {{ pause_data.yn_teacher }} </td>
+                        <td rowspan="1"> {{ pause_data.yn_student }} </td>
+                    </tr>
+                    <tr>
+                        <th colspan="1"> Why </th>
+                        <td rowspan="1"> {{ pause_data.why_teacher }} </td>
+                        <td rowspan="1"> {{ pause_data.why_student }} </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- D3.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+<!-- Plotly.js -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<script type="text/javascript">
+  var graph_time = {{graphJSON_time | safe}};
+  Plotly.plot('chart_time',graph_time.data, graph_time.layout);
+
+  var graph_prop = {{graphJSON_prop | safe}};
+  Plotly.plot('chart_proportion',graph_prop.data, graph_prop.layout);
+</script>
+{% endblock %}
+

@@ -1,0 +1,952 @@
+---
+header-includes:
+  - \usepackage{fontspec}
+  - \usepackage{tikz}
+  - \usepackage{lipsum}
+  - \usepackage{fontspec}
+  - \usetikzlibrary{fit,matrix,positioning,calc}
+  - \usepackage{geometry}
+  - \usepackage{microtype}
+geometry: "left=0cm,right=0cm,top=-.3cm,bottom=0cm"
+output: 
+  pdf_document:
+     latex_engine: lualatex
+params: 
+  school_row: ""
+  school_name: ""
+  state_abbr: ""
+---
+<!-- setup -->
+```{r, include=FALSE}
+# define fonts
+font_add("bookCond", "BkCd.otf")
+font_add("medCond", "MdCd.otf")
+# correct rounding
+round2 = function(x, digits=0) {
+  posneg = sign(x)
+  z = abs(x)*10^digits
+  z = z + 0.5
+  z = trunc(z)
+  z = z/10^digits
+  z*posneg
+}
+# read in data
+school_df <- params$school_row
+# school_df[is.na(school_df)] <- 0
+school_df[,3:ncol(school_df)] <- round2(school_df[,3:ncol(school_df)], 0)
+# set variables
+school_name <- params$school_name
+state_abbr <- params$state_abbr
+complt <- school_df[,2]
+# run graphs without shell ===================================================
+# # set working directory to data folder
+# setwd("/Volumes/sjlee/Documents/GitHub/automated-reports/autoReportsText4College")
+# install and load required packages
+# if (!require("pacman")) install.packages("pacman")
+# pacman::p_load(tidyverse, rmarkdown, ggplot2, ggpubr, ggthemes, showtext, ggrepel, DataCombine)
+# 
+# # define fonts
+# font_add("bookCond", "BkCd.otf")
+# font_add("medCond", "MdCd.otf")
+# 
+# # read in data
+# df <- read_excel("./Data/AL High School Reports 7-17-2020.xlsx")
+# school_df <- df[10,]
+# school_df[,3:ncol(school_df)] <- round(school_df[,3:ncol(school_df)], 0)
+# 
+# # set variables
+# school_name <- 'test school name'
+# state_abbr <- "MN"
+# complt <- school_df[,2]
+```
+
+<!-- create graph labels -->
+```{r, include=FALSE}
+# transpose school_df and rename columns
+school_df_t = setNames(data.frame(t(school_df[,-1])), "value")
+school_df_t <- rownames_to_column(school_df_t, "category")
+
+# first part of the label is the same
+cat_label1 <- c("Complete",
+    # gender donut graph
+    paste0("Male (", school_df_t[2, 2], "%)"),            
+    paste0("Female (", school_df_t[3, 2], "%)"), 
+    paste0("Other (", school_df_t[4, 2], "%)"),
+    # hispanic donut graph
+    paste0("Hispanic (", school_df_t[5, 2], "%)"),        
+    paste0("Not Hispanic\n(", school_df_t[6, 2], "%)"),
+    # race donut graph
+    paste0("Black (", school_df_t[7, 2], "%)"),
+    paste0("White (", school_df_t[8, 2], "%)"),  
+    paste0("Asian (", school_df_t[9, 2], "%)"), 
+    paste0("Hawaiian/Pacific\nIslander (", school_df_t[10, 2], "%)"),
+    paste0("Other (", school_df_t[11, 2], "%)"), 
+    # 1st gen donut graph
+    paste0("1st-Gen (", school_df_t[12, 2], "%)"), 
+    paste0("Not 1st-Gen\n(", school_df_t[13, 2], "%)"),
+    # figure 1
+    paste0("Yes, in fall 2021 (", school_df_t[14, 2], "%)"),
+    paste0("Yes, but not until at least January 2022 (", school_df_t[15, 2], "%)"), 
+    paste0("No, I don", sprintf("\u2019"), "t plan to continue my education (", school_df_t[16, 2], "%)"), 
+    paste0("I don", sprintf("\u2019"), "t know (", school_df_t[17, 2], "%)"))
+
+# colleges are different for each state
+if (state_abbr == "Alabama") {
+  colleges <- c(# figure 2
+    "Bevill State Community College",
+    "Chattahoochee Valley Community College",
+    "Enterprise State Community College",
+    "Lawson State Community College",
+    "Lurleen B. Wallace Community College",
+    "Northwest-Shoals Community College",
+    "Shelton State Community College",
+    "Snead State Community College",
+    "Southern Union State Community College",
+    "Wallace Community College",
+    "Wallace Community College Selma",
+    "Wallace State Community College",
+    "Other 2-year college in Alabama", 
+    "Other 4-year university in Alabama", 
+    "Other college, out of state"
+  )
+} else if (state_abbr == "Arizona") {
+  colleges <- c(# figure 3
+    "Central Arizona College-Aravaipa Campus",
+    "Central Arizona College-Maricopa Campus",
+    "Central Arizona College-San Tan Campus",
+    "Central Arizona College-Signal Peak Campus",
+    "Central Arizona College-Superstition Mountain Campus",
+    "Central Arizona College, Undecided",	
+    "Chandler-Gilbert Community College",
+    "Estrella Mountain Community College",
+    "GateWay Community College",
+    "Glendale Community College",
+    "Maricopa Community Colleges, Undecided or Multiple Colleges",
+    "Mesa Community College",
+    "Paradise Valley Community College",
+    "Phoenix College",
+    "Rio Salado Community College",
+    "Scottsdale Community College",
+    "South Mountain Community College",
+    "Other 2-year college in Arizona", 
+    "Other 4-year university in Arizona", 
+    "Other college, out of state"
+  )
+} else if (state_abbr == "Kentucky") {
+  colleges <- c(# figure 2
+    "Ashland Community & Technical College",
+    "Bluegrass Community & Technical College",
+    "Elizabethtown Community & Technical College",
+    "Gateway Community & Technical College",
+    "Hazard Community & Technical College",
+    "Hopkinsville Community & Technical College",
+    "Maysville Community & Technical College",
+    "Owensboro Community & Technical College",
+    "Somerset Community College",
+    "Southeast Kentucky Community & Technical College",
+    "West Kentucky Community & Technical College",
+    "Other 2-year college in Kentucky", 
+    "Other 4-year university in Kentucky", 
+    "Other college, out of state"
+  )
+} else {
+  # this is MN
+  colleges <- c(# figure 2
+    "Anoka Technical College", 
+    "Anoka-Ramsey Community College", 
+    "Dakota County Technical College", 
+    "Hibbing Community College", 
+    "Inver Hills Community College", 
+    "Minneapolis College", 
+    "Minnesota State College Southeast", 
+    "Minnesota West Community & Technical College", 
+    "North Hennepin Community College", 
+    "Northland Community & Technical College", 
+    "Pine Technical & Community College", 
+    "Other",
+    "Saint Paul College", 
+    "St. Cloud Technical & Community College", 
+    "Other 2-year college in Minnesota", 
+    "Other 4-year university in Minnesota", 
+    "Other college, out of state"
+  )
+}
+
+fig6_i <- 17 + length(colleges) + 24
+# the rest of the labels
+cat_label2 <- c(
+    # figure 3
+    "Certificate", paste0("Associate", sprintf("\u2019"), "s\n degree"), paste0("Bachelor", sprintf("\u2019"), "s\n degree"), "Undecided", "Not\n applicable",
+    # figure 4
+    "School counselor", "Parent", "Friend", "College search guide or website", "College/university library", 
+    "Teacher", "Sibling", "College representatives", "School library", "College tours", "Coach", 
+    "Other relative", paste0("College", sprintf("\u2019"), "s publication or website"), "Public library",
+    # figure 5
+    "Filling out\n applications", "Filling out\n financial aid\n forms", "Assistance\n in writing\n essays\n for applications", 
+    "Days off from\n school to\n visit technical/\n certificate\n programs\n or colleges",
+    # figure 6
+    paste0("Yes, I already have filled out a FAFSA (", school_df_t[fig6_i, 2], "%)"), 
+    paste0("Yes, I plan to fill out a FAFSA (", school_df_t[(fig6_i+1), 2], "%)"), 
+    paste0("No, I am not going to fill out a FAFSA (", school_df_t[(fig6_i+2), 2], "%)"), 
+    paste0("Not sure, I", sprintf("\u2019"), "m not familiar with FAFSA (", school_df_t[(fig6_i+3), 2], "%)"),
+    # figure 7
+    "Read information from a technical\n school or college about financial aid", "Talked with a high school teacher or counselor", 
+    "Read U.S. Department of Education\n information on financial aid", "Talked to a knowledgeable adult", 
+    "Talked with a representative\n from a technical school or college", 
+    "Read about financial aid\n available through military service", "Talked with a loan officer at a bank")
+
+cat_labels <- c(cat_label1, colleges, cat_label2)
+school_df_t$cat_label <- cat_labels
+
+```
+
+ <!-- create dataframe for each graph -->
+ <!-- Donut Graph Dataframes -->
+```{r, include=FALSE}
+# create dataframe for donut graph: Gender
+donut_gender_df <- school_df_t[2:4,]
+donut_gender_df$fill <- c("#44cbff", "#55a428", "#d06648") # originally c("#00A3E0", "#4D9424", "#C05131")
+donut_gender_df$label_position <- c(14, 66, 86)
+donut_gender_df <- donut_gender_df[donut_gender_df$value != 0,] # remove rows with zero values
+space <- c("space", 0.3, "", "#ffffff", NA) # non-data row for white spacing in plot
+n_spaces <- nrow(donut_gender_df)-1 # the number of spaces needed
+row_nums <- c() # row numbers where spaces need to be inserted
+for (i in 0:n_spaces){ # insert a row for a space in between every real data row
+  donut_gender_df <- InsertRow(donut_gender_df, NewRow = space, RowNum = i*2+1)
+}
+donut_gender_df$label_position <- as.numeric(donut_gender_df$label_position) # make the label_position row a numeric var
+donut_gender_df$ymax = cumsum(donut_gender_df$value) # y-position of top of bar
+donut_gender_df$ymin = c(0, head(donut_gender_df$ymax, n=-1)) # y-position of bottom of bar
+donut_gender_df$label_position_mid <- (donut_gender_df$ymax + donut_gender_df$ymin) / 2 # y-position of middle of bar, for labels
+# create dataframe for donut graph: Hispanic
+donut_hispanic_df <- school_df_t[5:6,]
+donut_hispanic_df$fill <- c("#d06648", "#a1a3a5")
+donut_hispanic_df$text_color <- c("#d06648", "#7f8285")
+donut_hispanic_df$label_position <- c(15, 65) # pre-defined label position
+donut_hispanic_df <- donut_hispanic_df[donut_hispanic_df$value != 0,] # remove rows with zero values
+space <- c("space", 0.3, "", "#ffffff", "#ffffff", NA) # non-data row for white spacing in plot
+n_spaces <- nrow(donut_hispanic_df)-1 # the number of spaces needed
+row_nums <- c() # row numbers where spaces need to be inserted
+for (i in 0:n_spaces){ # insert a row for a space in between every real data row
+  donut_hispanic_df <- InsertRow(donut_hispanic_df, NewRow = space, RowNum = i*2+1)
+}
+donut_hispanic_df$label_position <- as.numeric(donut_hispanic_df$label_position) # make the label_position row a numeric var
+donut_hispanic_df$ymax = cumsum(donut_hispanic_df$value) # y-position of top of bar
+donut_hispanic_df$ymin = c(0, head(donut_hispanic_df$ymax, n=-1)) # y-position of bottom of bar
+donut_hispanic_df$label_position_mid <- (donut_hispanic_df$ymax + donut_hispanic_df$ymin) / 2 # y-position of middle of bar, for labels
+# create dataframe for donut graph: Race
+donut_race_df <- school_df_t[7:11,]
+donut_race_df$fill <- c("#d06648", "#004484", "#0068d6", "#44cbff", "#55a428")
+donut_race_df <- donut_race_df %>% arrange(desc(value)) # order by value
+donut_race_df$ymax = cumsum(donut_race_df$value) # y-position of top of bar
+total <- tail(donut_race_df$ymax, 1)/100
+if (school_name=="Richfield Senior High" | school_name=='Henry Sibley High School' | school_name=='Anderson County High School, Anderson County') {
+  donut_race_df$label_position <- c(35*total, 76*total, 82*total, 87*total, 15*total)
+} else {
+  donut_race_df$label_position <- c(35*total, 76*total, 82*total, 87*total, 91*total)
+}
+donut_race_df <- donut_race_df[donut_race_df$value != 0,c(1:4, 6)] # remove rows with zero values, remove ymax
+space <- c("space", 0.3, "", "#ffffff", NA) # non-data row for white spacing in plot
+n_spaces <- nrow(donut_race_df)-1 # the number of spaces needed
+row_nums <- c() # row numbers where spaces need to be inserted
+for (i in 0:n_spaces){ # insert a row for a space in between every real data row
+  donut_race_df <- InsertRow(donut_race_df, NewRow = space, RowNum = i*2+1)
+}
+donut_race_df$label_position <- as.numeric(donut_race_df$label_position) # make the label_position row a numeric var
+# donut_race_df$category <- factor(donut_race_df$category, 
+#                                  levels = c('Black', 'White', 'Asian','Hawaiian_Pacific', 'Am_Indian')) # create factor levels
+# donut_race_df <- donut_race_df %>% arrange(category) # order by factor levels
+donut_race_df$ymax = cumsum(donut_race_df$value) # y-position of top of bar
+donut_race_df$ymin = c(0, head(donut_race_df$ymax, n=-1)) # y-position of bottom of bar
+donut_race_df$label_position_mid <- (donut_race_df$ymax + donut_race_df$ymin) / 2 # y-position of middle of bar, for labels
+# create dataframe for donut graph: First-Gen College
+donut_firstgen_df <- school_df_t[12:13,]
+donut_firstgen_df$fill <- c("#44cbff", "#a1a3a5")
+donut_firstgen_df$text_color <- c("#44cbff", "#7f8285")
+donut_firstgen_df$label_position <- c(15, 65) # pre-defined label position
+donut_firstgen_df <- donut_firstgen_df[donut_firstgen_df$value != 0,] # remove rows with zero values
+space <- c("space", 0.3, "", "#ffffff", "#ffffff", NA) # non-data row for white spacing in plot
+n_spaces <- nrow(donut_firstgen_df)-1 # the number of spaces needed
+row_nums <- c() # row numbers where spaces need to be inserted
+for (i in 0:n_spaces){ # insert a row for a space in between every real data row
+  donut_firstgen_df <- InsertRow(donut_firstgen_df, NewRow = space, RowNum = i*2+1)
+}
+donut_firstgen_df$label_position <- as.numeric(donut_firstgen_df$label_position) # make the label_position row a numeric var
+donut_firstgen_df$ymax = cumsum(donut_firstgen_df$value) # y-position of top of bar
+donut_firstgen_df$ymin = c(0, head(donut_firstgen_df$ymax, n=-1)) # y-position of bottom of bar
+donut_firstgen_df$label_position_mid <- (donut_firstgen_df$ymax + donut_firstgen_df$ymin) / 2 # y-position of middle of bar, for labels
+```
+
+<!-- Bar Plot Dataframes -->
+```{r, include=FALSE}
+# ======================================== create dataframe for figure 1 ========================================
+bar1_df <- school_df_t[14:17,]
+bar1_df$x <- 1
+# define bar fill/text colors
+bar1_df$fill <- c("#0068d6", "#d06648", "#44cbff", "#7f8285")
+bar1_df <- bar1_df[bar1_df$value != 0,] # remove rows with zero values
+if (nrow(bar1_df) > 1) {
+  space <- c("space", 2, "", 1, "#ffffff") # non-data row for white spacing in plot
+  n_spaces <- nrow(bar1_df)-1 # the number of spaces needed
+  row_nums <- c() # row numbers where spaces need to be inserted
+  for (i in 1:n_spaces){ # insert a row for a space in between every real data row
+    bar1_df <- InsertRow(bar1_df, NewRow = space, RowNum = i*2)
+  }
+}
+# reverse order of rows
+bar1_df<- bar1_df[seq(dim(bar1_df)[1],1),]
+# add in an artificial row with value = 0
+start <- c("start", 0, "", 1, "#ffffff")
+bar1_df <- InsertRow(bar1_df, NewRow = start, RowNum = 1)
+# create cum_value variable
+bar1_df <- bar1_df %>%
+  mutate(cum_value = cumsum(bar1_df$value))
+# make sure numerical vars are numeric
+bar1_df$value <- as.numeric(bar1_df$value)
+bar1_df$x <- as.numeric(bar1_df$x)
+# ======================================== create dataframe for figure 2 ========================================
+num_colleges <- length(colleges)
+# define factor levels for figure 2 categories, based on state
+bar2_df <- school_df_t[18: (17+num_colleges), ]
+full_state_name <- list(
+  AL = "Alabama",
+  CT = "Connecticut",
+  MN = "Minnesota",
+  Alabama = "Alabama",
+  Arizona = "Arizona",
+  Kentucky = "Kentucky"
+)
+# these should come last in the graph
+special_categories <- c("Other college, out of state", 
+                        paste0("Other 4-year university in ", full_state_name[[state_abbr]]), 
+                        paste0("Other 2-year college in ", full_state_name[[state_abbr]]))
+# define order of bars
+order <- bar2_df %>% arrange(value) %>% .[,3]
+order <- order[!order %in% special_categories]
+order <- c(special_categories, order)
+# create category label for each bar
+bar2_df$cat_label <- factor(bar2_df$cat_label, levels = order)
+# ======================================== create dataframe for figure 3 ========================================
+fig3_i <- 18 + length(colleges)
+bar3_df <- school_df_t[fig3_i:(fig3_i+4), ]
+# define factor levels for categories
+bar3_df$cat_label <- factor(bar3_df$cat_label, 
+                            levels = c("Certificate", paste0("Associate", sprintf("\u2019"), "s\n degree"), paste0("Bachelor", sprintf("\u2019"), "s\n degree"),
+                                       "Undecided", "Not\n applicable"))
+bar3_df <- bar3_df %>% arrange(cat_label)
+# ======================================== create dataframe for figure 4 ========================================
+bar4_df <- school_df_t[(fig3_i+5):(fig3_i+18), ]
+# ======================================== create dataframe for figure 5 ========================================
+bar5_df <- school_df_t[(fig3_i+19):(fig3_i+22), ]
+# ======================================== create dataframe for figure 6 ========================================
+bar6_df <- school_df_t[(fig3_i+23):(fig3_i+26), ]
+bar6_df$x <- 1
+# define bar fill/text colors
+bar6_df$fill <- c("#0068d6", "#d06648", "#44cbff", "#7f8285")
+bar6_df <- bar6_df[bar6_df$value != 0,] # remove rows with zero values
+if (nrow(bar6_df) > 1) {
+  space <- c("space", 2, "", 1, "#ffffff") # non-data row for white spacing in plot
+  n_spaces <- nrow(bar6_df)-1 # the number of spaces needed
+  if(n_spaces>0) {
+    row_nums <- c() # row numbers where spaces need to be inserted
+    for (i in 1:n_spaces){ # insert a row for a space in between every real data row
+    bar6_df <- InsertRow(bar6_df, NewRow = space, RowNum = i*2)
+    }
+  }
+}
+# reverse order of rows
+bar6_df<- bar6_df[seq(dim(bar6_df)[1],1),]
+# add in an artificial row with value = 0
+start <- c("start", 0, "", 1, "#ffffff")
+bar6_df <- InsertRow(bar6_df, NewRow = start, RowNum = 1)
+# create cum_value variable
+bar6_df <- bar6_df %>%
+  mutate(cum_value = cumsum(bar6_df$value))
+# make sure numerical vars are numeric
+bar6_df$value <- as.numeric(bar6_df$value)
+bar6_df$x <- as.numeric(bar6_df$x)
+# ======================================== create dataframe for figure 7 ========================================
+bar7_df <- school_df_t[(fig3_i+27):(fig3_i+33), ]
+```
+
+<!-- Draw graphs -->
+<!-- Donut Graphs -->
+```{r, include=FALSE}
+# donut graph: gender
+p <- ggplot(donut_gender_df, aes(ymax=ymax, ymin=ymin, xmax=10, xmin=9, fill=category)) +
+  geom_rect(color = "white", size = 0, fill = donut_gender_df$fill) +
+  coord_polar(theta="y") + # this makes the plot circular instead of rectangular
+  xlim(c(6.3, 12)) + # decrease the first argument to make the donut slimmer
+  geom_text(aes(label = cat_label, x = 11.7, y = label_position), hjust=0.5, # can also try y=label_position_mid
+            family="bookCond", size = 2.2, color = donut_gender_df$fill) +
+  theme_void() + theme(panel.background = element_rect(fill = "transparent", color = "transparent"))
+showtext_auto()
+ggsave("images/donut_gender.png", width = 6, height = 5, units = "cm", dpi=1200, bg = "transparent", device=cairo_pdf)
+
+# donut graph: hispanic
+p <- ggplot(donut_hispanic_df, aes(ymax=ymax, ymin=ymin, xmax=10, xmin=9, fill=category)) +
+  geom_rect(color = "white", size = 0, fill = donut_hispanic_df$fill) +
+  coord_polar(theta="y") + # this makes the plot circular instead of rectangular
+  xlim(c(6.3, 12)) + # decrease the first argument to make the donut slimmer
+  geom_text(aes(label = cat_label, x = 11.8, y = label_position), hjust=0.5, # change to y = label_position if labels are off
+            family="bookCond", size = 2.2, color = donut_hispanic_df$fill) +
+  theme_void() + theme(panel.background = element_rect(fill = "transparent", color = "transparent"))
+showtext_auto()
+ggsave("images/donut_hispanic.png", width = 6, height = 5, units = "cm", dpi=1200, bg = "transparent", device=cairo_pdf)
+
+# donut graph: race
+# TODO: suggest changing order of colors so labels aren't as confusing
+p <- ggplot(donut_race_df, aes(ymax=ymax, ymin=ymin, xmax=10, xmin=8.95, fill=category)) +
+  geom_rect(color = "white", size = 0, fill = donut_race_df$fill) +
+  coord_polar(theta="y") + # this makes the plot circular instead of rectangular
+  xlim(c(6.3, 12.3)) + # decrease the first argument to make the donut slimmer
+  geom_text(aes(label = cat_label, x = 12, y = label_position), hjust=0.5, # can also try y=label_position_mid
+            family="bookCond", size = 2, color = donut_race_df$fill) +
+  theme_void() + theme(panel.background = element_rect(fill = "transparent", color = "transparent"))
+showtext_auto()
+ggsave("images/donut_race.png", width = 6, height = 5, units = "cm", dpi=1200, bg = "transparent", device=cairo_pdf)
+
+# donut graph: first-generation
+p <- ggplot(donut_firstgen_df, aes(ymax=ymax, ymin=ymin, xmax=10, xmin=9, fill=category)) +
+  geom_rect(color = "white", size = 0, fill = donut_firstgen_df$fill) +
+  coord_polar(theta="y") + # this makes the plot circular instead of rectangular
+  xlim(c(6.3, 12)) + # decrease the first argument to make the donut slimmer
+  geom_text(aes(label = cat_label, x = 12, y = label_position), hjust=0.5, # can also try y=label_position_mid
+            family="bookCond", size = 2.2, color = donut_firstgen_df$text_color) +
+  theme_void() + theme(panel.background = element_rect(fill = "transparent", color = "transparent"), plot.margin= unit(c(0,0,0.1,0), "cm"))
+showtext_auto()
+ggsave("images/donut_firstgen.png", width = 6, height = 5, units = "cm", dpi=1200, bg = "transparent", device=cairo_pdf)
+```
+
+<!-- Stacked Bar Graphs -->
+```{r, include=FALSE}
+# stacked bar graph: figure 1
+not_sure_row <- which(startsWith(bar1_df$cat_label, "I don"))
+no_row <- which(startsWith(bar1_df$cat_label, "No, I"))
+yes_later_row <- which(startsWith(bar1_df$cat_label, "Yes, but"))
+yes_fall_row <- which(startsWith(bar1_df$cat_label, "Yes, in"))
+p <- ggplot(bar1_df, aes(x = x, y = value, fill = category)) +
+  geom_col(color = NA, width = 0.95, fill = bar1_df$fill) +
+  annotate(geom="text", label=bar1_df[not_sure_row, "cat_label"], hjust = 0, x = 1.56, 
+           y=mean(c(0, bar1_df[not_sure_row, "cum_value"])),
+           family="bookCond", size = 2.4, color = "#7f8285") + # bottom bar
+  annotate(geom="text", label=bar1_df[no_row, "cat_label"], hjust = 0, x = 1.56, 
+           y=mean(c(bar1_df[no_row, "cum_value"], bar1_df[no_row-1, "cum_value"])),
+           family="bookCond", size = 2.4, color = "#44cbff") +
+  annotate(geom="text", label=bar1_df[yes_later_row, "cat_label"], hjust = 0, x = 1.56, 
+           y=mean(c(bar1_df[yes_later_row, "cum_value"], bar1_df[yes_later_row-1, "cum_value"])),
+           family="bookCond", size = 2.4, color = "#d06648") +
+  annotate(geom="text", label=bar1_df[yes_fall_row, "cat_label"], hjust = 0, x = 1.56,
+           y=mean(c(bar1_df[yes_fall_row, "cum_value"], bar1_df[yes_fall_row-1, "cum_value"])),
+           family="bookCond", size = 2.4, color = "#0068d6") +
+  scale_fill_brewer(palette = "Set2") +
+  theme_void() + 
+  theme(legend.position = "none") +
+  xlim(0.525,4.1)
+showtext_auto()
+ggsave("images/bar1.png", width = 6.6, height = 5, units = "cm", dpi=1200, bg = "transparent", device=cairo_pdf)
+
+# stacked bar graph: figure 6
+not_sure_row <- which(startsWith(bar6_df$cat_label, "Not sure"))
+no_row <- which(startsWith(bar6_df$cat_label, "No, I"))
+yes_plan_row <- which(startsWith(bar6_df$cat_label, "Yes, I plan"))
+yes_already_row <- which(startsWith(bar6_df$cat_label, "Yes, I already"))
+p <- ggplot(bar6_df, aes(x = x, y = value, fill = category)) +
+  geom_col(color = NA, width = 0.95, fill = bar6_df$fill) +
+  annotate(geom="text", label=bar6_df[not_sure_row, "cat_label"], hjust = 0, x = 1.56,
+           y=mean(c(0, bar6_df[not_sure_row, "cum_value"])),
+           family="bookCond", size = 2.4, color = "#7f8285") + # bottom bar
+  annotate(geom="text", label=bar6_df[no_row, "cat_label"], hjust = 0, x = 1.56,
+           y=mean(c(bar6_df[no_row, "cum_value"], bar6_df[no_row-1, "cum_value"])),
+           family="bookCond", size = 2.4, color = "#44cbff") +
+  annotate(geom="text", label=bar6_df[yes_plan_row, "cat_label"], hjust = 0, x = 1.56,
+           y=mean(c(bar6_df[yes_plan_row, "cum_value"], bar6_df[yes_plan_row-1, "cum_value"])),
+           family="bookCond", size = 2.4, color = "#d06648") +
+  annotate(geom="text", label=bar6_df[yes_already_row, "cat_label"], hjust = 0, x = 1.56,
+           y=mean(c(bar6_df[yes_already_row, "cum_value"], bar6_df[yes_already_row-1, "cum_value"])),
+           family="bookCond", size = 2.4, color = "#0068d6") +
+  scale_fill_brewer(palette = "Set2") +
+  theme_void() + 
+  theme(legend.position = "none") +
+  xlim(0.525,4.1)
+showtext_auto()
+ggsave("images/bar6.png", width = 6.6, height = 5, units = "cm", dpi=1200, bg = "transparent", device=cairo_pdf)
+```
+
+<!-- Horizontal Bar Graphs -->
+```{r, include=FALSE}
+# horizontal bar graph: figure 2
+p <- ggplot(bar2_df, aes(x = cat_label, y = value)) +
+  geom_bar(stat = "identity", fill = "#dedede", width=0.8) + coord_flip() + theme_void() + 
+  theme(axis.text.y = element_text(family="bookCond", color="#0068d6", size=6, hjust = 1)) +
+  geom_text(aes(label = paste0(value, "%"), x = cat_label, y = 1), hjust=0,vjust = 0.5,
+            family="medCond", size = 2.4, color = "#0068d6")
+showtext_auto()
+ggsave("images/bar2.png", width = 6, height = 4.3, units = "cm", dpi=1200, bg = "transparent", device=cairo_pdf)
+
+# horizontal bar graph: figure 4
+p <- ggplot(bar4_df, aes(x = reorder(cat_label, value), y = value)) +
+  geom_bar(stat = "identity", fill = "#dedede", width=0.8) + coord_flip() + theme_void() + 
+  theme(axis.text.y = element_text(family="bookCond", color="#0068d6", size=6, hjust = 1)) +
+  geom_text(aes(label = paste0(value, "%"), x = cat_label, y = 1), hjust=0,vjust = 0.5,
+            family="medCond", size = 2.4, color = "#0068d6")
+showtext_auto()
+ggsave("images/bar4.png", width = 4.9, height = 4.5, units = "cm", dpi=1200, bg = "transparent", device=cairo_pdf)
+
+# horizontal bar graph: figure 7
+p <- ggplot(bar7_df, aes(x = reorder(cat_label, value), y = value)) +
+  geom_bar(stat = "identity", fill = "#dedede", width=0.6) + coord_flip() + theme_void() + 
+  theme(axis.text.y = element_text(family="bookCond", color="#0068d6", size=6, hjust = 1)) +
+  geom_text(aes(label = paste0(value, "%"), x = cat_label, y = 1), hjust=0,vjust = 0.5,
+            family="medCond", size = 2.4, color = "#0068d6")
+showtext_auto()
+ggsave("images/bar7.png", width = 5.9, height = 4.5, units = "cm", dpi=1200, bg = "transparent", device=cairo_pdf)
+```
+
+<!-- Vertical Bar Graphs -->
+```{r, include=FALSE}
+# vertical bar graph: figure 3
+p <- ggplot(bar3_df, aes(x = cat_label, y = value)) +
+  geom_bar(stat = "identity", fill = "#54a048", width=0.67) + theme_void() +
+  geom_text(aes(label = paste0(value, "%"), x = cat_label, y = value+3, vjust = 0),
+            family = "medCond", size = 2.4, color = "#54a048") +
+  theme(plot.margin= unit(c(0,0,0.1,0), "cm"), axis.text.x = element_text(family="bookCond", size=6, vjust=1, lineheight = 0.7)) +
+  scale_y_continuous(limits = c(0, max(as.numeric(bar3_df$value))+5))
+showtext_auto()
+ggsave("images/bar3.png", width = 8, height = 3.1, units = "cm", dpi=1200, bg = "transparent", device=cairo_pdf)
+
+# vertical bar graph: figure 5
+p <- ggplot(bar5_df, aes(x = reorder(cat_label, desc(value)), y = value)) +
+  geom_bar(stat = "identity", fill = "#54a048", width=0.65) + theme_void() +
+  geom_text(aes(label = paste0(value, "%"), x = cat_label, y = value+5, vjust = 0),
+            family = "medCond", size = 2.4, color = "#54a048") +
+  theme(plot.margin= unit(c(0,0,0.1,0), "cm"), axis.text.x = element_text(family="bookCond", size=6, vjust=1, lineheight = 0.8)) +
+  scale_y_continuous(limits = c(0, max(bar5_df$value)+10))
+showtext_auto()
+ggsave("images/bar5.png", width = 7, height = 4, units = "cm", dpi=1200, bg = "transparent", device=cairo_pdf)
+```
+
+
+<!-- LATEX PART -->
+<!-- fonts -->
+\newfontface{\MdCdFont}{MdCd}
+\newfontface{\BkCdItFont}{BkCdIt}
+\newfontfamily{\BkCdFont}{BkCd}
+
+<!-- colors -->
+\definecolor{darkblue}{HTML}{003A70}
+\definecolor{skyblue}{HTML}{00A3E0}
+\definecolor{blue}{HTML}{005EC2}
+\definecolor{darkgrey}{HTML}{64676B}
+\definecolor{boxgreyline}{HTML}{D4D4D4}
+\definecolor{boxgreyfill}{HTML}{EEEEEF}
+\definecolor{boxtext}{HTML}{003A70}
+\definecolor{white}{HTML}{FFFFFF}
+\definecolor{footnotegrey}{HTML}{53565A}
+\definecolor{linkblue}{HTML}{80D0ED}
+
+<!-- FIRST PAGE -->
+
+```{r, include=FALSE}
+cm <- 0.03527778 # convert px to cm
+adjustmargin1 <- .3
+adjustmargin2 <- .65
+# font sizes
+# header boxes
+header_font <- 17
+header_font2 <- header_font + 2
+figure_font <- 14
+figure_font2 <- figure_font + 2
+# text
+survey_font <- 20
+survey_font2 <- survey_font + 2
+school_font <- 30
+school_font2 <- school_font + 2
+school2_font <- 25
+school2_font2 <- school2_font + 2
+text_font <- 13.5
+text_font2 <- text_font +2
+text2_font <- 12.5
+text2_font2 <- text2_font +2
+# footnote
+footnote_font <- 7.5
+footnote_font2 <- footnote_font + 2
+# header locations
+margin_x <- 16.9091 * cm
+margin_y <- -16.9091 * cm 
+topbar_width <- 592.9091 * cm
+topbar_h <- 18.3439 * cm
+topbar_y <- margin_y - topbar_h 
+topmargin_xy <- 12.0909 * cm
+logo_y <- margin_y - topbar_h - topmargin_xy 
+logo_w <- 129.3243 * cm
+logo_h <- 114.9124 * cm
+toptext_x <- margin_x + logo_w + topmargin_xy
+toptext_y <- logo_y 
+toptext_w <- 420 * cm
+date_x <- 17.8
+date_y <- topbar_y + adjustmargin1 + .22
+# donut boxes
+betweenmargin <- 0.127 
+margin2_y <- 25.6364 * cm
+donutboxhdtop_y <- margin_y - topbar_h - topmargin_xy - logo_h - margin2_y + adjustmargin2
+donutbox_w <- 141.7266 * cm
+donutboxheader_h <- 21.7884 * cm
+donutbox_h <- 79.9184 * cm
+donutbox1_x <- margin_x + donutbox_w
+donutboxhdbt_y <- donutboxhdtop_y - donutboxheader_h
+donutboxbottom_y <- donutboxhdbt_y - donutbox_h 
+donutbox21_x <- margin_x + donutbox_w + betweenmargin
+donutbox22_x <- donutbox21_x + donutbox_w
+donutbox31_x <- donutbox21_x + donutbox_w + betweenmargin
+donutbox32_x <- donutbox31_x + donutbox_w
+donutbox41_x <- donutbox31_x + donutbox_w + betweenmargin
+donutbox42_x <- donutbox41_x + donutbox_w
+# donuts
+donutmargin_x <- .2 
+donutmargin_y <- .6
+donut_w <- 5.25
+donut1_x <- 0.5
+donut_y <- donutboxhdbt_y - donutmargin_y + .75
+donut2_x <- donut1_x + donut_w -.2
+donut3_x <- donut2_x + donut_w -.2
+donut4_x <- donut3_x + donut_w -.2
+# donut people
+donutppl_h <- 1.1176
+donutppl1_x <- donut1_x + 2.15
+donutppl1_y <- donut_y - 1.65 
+donutppl12_y <- donut_y - 1.95
+donutppl2_x <- donutppl1_x + donutbox_w 
+donutppl3_x <- donutppl2_x + donutbox_w -.1  
+donutppl4_x <- donutppl3_x + donutbox_w +.25
+# bar graph boxes
+barhead1_y <- donutboxbottom_y -.45 + donutmargin_y
+barhead2_y <- barhead1_y - 1.18
+barhead11_x <- 0.87
+barhead12_x <- barhead11_x + 6.41
+bar_xy <- 1.05
+barbox11_y <- donutboxbottom_y - .81 + donutmargin_y
+barbox1_x <- bar_xy + 9.04
+barbox12_y <- barbox11_y - 7
+barhead21_y <- barhead1_y - .62
+barhead21_x <- barhead12_x + 4.14
+barhead22_x <- barhead21_x + 8.42
+barbox21_x <- barbox1_x + 1.51
+barbox22_x <- barbox21_x + 9.04
+barhead3_y <- barbox12_y -.49 
+barhead31_y <- barhead3_y - .62
+barhead31_x <- 2.49
+barhead32_x <- barhead31_x + 14.28
+barbox31_x <- 75.2727 * cm
+barbox31_y <- barbox12_y - .81 
+barbox32_x <- barbox31_x + 15.76
+barbox32_y <- barbox31_y - 5.49
+ 
+# bar graphes
+bar1_h <- 5.7
+bar1_x <- bar_xy + 1.04
+bar1_y <- barhead2_y - 1.51
+bar2_h <- 5.84
+bar2_x <- barbox21_x + .3
+bar2_y <- barhead21_y - 1.58
+footnote_x <- barbox21_x + .2
+footnote_y <- barbox12_y - .8
+bar3_w <- 10.35
+headnote_x <- barhead31_x + 2.55
+headnote_y <- barhead31_y - 1.4
+bar3_x <- barbox31_x + 2.6
+bar3_y <- barbox32_y + 3.25
+footnote2_x <- barbox31_x + .2
+footnote2_y <- barbox32_y - .8
+# Footer
+foot1_y <- barbox32_y - .41 + donutmargin_y
+foot2_x <- (576 * cm) + donutmargin_y
+foot2_y <- foot1_y - (73.3758 * cm)
+footair1_x <- 5.62
+footair1_y <- foot1_y - 1.32
+footair_w <- 8.5
+airlogo_w <- 126.5758 * cm
+#airlogo_h <- 48.8843 * cm
+airlogo_h <- 35 * cm
+airlogo_x <- 16
+#airlogo_y <- foot2_y + .3
+airlogo_y <- foot2_y + .1
+```
+
+<!-- images -->
+\pgfdeclareimage[width=`r logo_w`cm,height=`r logo_h`cm]{textBox}{images/textbox}
+\pgfdeclareimage[width=`r donut_w`cm]{donut1}{images/donut_gender}
+\pgfdeclareimage[width=`r donut_w`cm]{donut2}{images/donut_hispanic}
+\pgfdeclareimage[width=`r donut_w`cm]{donut3}{images/donut_race}
+\pgfdeclareimage[width=`r donut_w`cm]{donut4}{images/donut_firstgen}
+\pgfdeclareimage[height=`r donutppl_h`cm]{gender}{images/01_gender}
+\pgfdeclareimage[height=`r donutppl_h`cm]{hispanic}{images/02_hispanic}
+\pgfdeclareimage[height=`r donutppl_h`cm]{race}{images/03_race-ethnicity}
+\pgfdeclareimage[height=`r donutppl_h`cm]{college}{images/04_college}
+\pgfdeclareimage[width=`r airlogo_w`cm,height=`r airlogo_h`cm]{airlogo}{images/B_AIR_Stacked_Reverse}
+\pgfdeclareimage[height=`r bar1_h`cm]{stackbar}{images/bar1}
+\pgfdeclareimage[height=`r bar2_h`cm]{sidebar}{images/bar2}
+\pgfdeclareimage[width=`r bar3_w`cm]{longbar}{images/bar3}
+
+
+<!-- top with date, logo, school text -->
+\newcommand*{\Header}{
+\begin{tikzpicture}[overlay,remember picture]
+<!-- bar -->
+\draw [fill=darkblue] ($ (`r margin_x`,`r margin_y`) $) rectangle ($ (`r topbar_width`,`r topbar_y`) $);
+<!-- date -->
+\node[anchor=north east, xshift=`r date_x`cm, yshift=`r date_y`cm, text width=20cm] at (current page.north east) {
+  \textcolor{skyblue}{\fontsize{12}{14}\selectfont \raggedright \fontdimen3\font=0pt \MdCdFont May 2021}};
+<!-- logo -->
+\node[anchor=north west, xshift=`r margin_x`cm, yshift=`r logo_y`cm] at (current page.north west) {
+  \pgfuseimage{textBox}};
+<!-- school name and text -->
+\node[anchor=north west, xshift=`r toptext_x`cm, yshift=`r toptext_y`cm, text width=`r toptext_w`cm, execute at begin node=\setlength{\baselineskip}{3.3ex}] at (current page.north west) {
+  \textcolor{blue}{\fontsize{`r survey_font`}{`r survey_font2`}\selectfont \raggedright   \fontdimen3\font=0pt \BkCdFont SURVEY REPORT}
+  \par \vspace{2mm}
+  \textcolor{blue}{\fontsize{`r school_font`}{`r school_font2`}\selectfont \raggedright   \fontdimen3\font=0pt \MdCdFont `r school_name`}
+  \par \vspace{3mm}
+  \textcolor{darkgrey}{\fontsize{`r text_font`}{`r text_font2`}\selectfont \raggedright   \fontdimen3\font=0pt \BkCdFont This report summarizes data collected from your seniors about their plans for after graduation. Survey data were collected in April and May 2021. A total of `r complt` graduating seniors from your high school completed the survey. A summary of responding student demographics is below. All\\ percentages displayed are the percent of responding students who chose a particular answer.}};
+\end{tikzpicture}
+}
+\Header
+
+
+<!-- donut graphs -->
+\newcommand*{\Donuts} {
+\begin{tikzpicture}[overlay,remember picture]
+<!-- donut people -->
+\node[anchor=north west, xshift=`r donutppl1_x`cm, yshift=`r donutppl1_y`cm] at (current page.north west) {
+  \pgfuseimage{gender}};
+\node[anchor=north west, xshift=`r donutppl2_x`cm, yshift=`r donutppl12_y`cm] at (current page.north west) {
+  \pgfuseimage{hispanic}};
+\node[anchor=north west, xshift=`r donutppl3_x`cm, yshift=`r donutppl12_y`cm] at (current page.north west) {
+  \pgfuseimage{race}};
+\node[anchor=north west, xshift=`r donutppl4_x`cm, yshift=`r donutppl12_y`cm] at (current page.north west) {
+  \pgfuseimage{college}};
+<!-- the donuts -->
+\node[anchor=north west, xshift=`r donut1_x`cm, yshift=`r donut_y`cm] at (current page.north west) {
+  \pgfuseimage{donut1}};
+\node[anchor=north west, xshift=`r donut2_x`cm, yshift=`r donut_y`cm] at (current page.north west) {
+  \pgfuseimage{donut2}};
+\node[anchor=north west, xshift=`r donut3_x`cm, yshift=`r donut_y`cm] at (current page.north west) {
+  \pgfuseimage{donut3}};
+\node[anchor=north west, xshift=`r donut4_x`cm, yshift=`r donut_y`cm] at (current page.north west) {
+  \pgfuseimage{donut4}};
+<!-- surrounding donut box -->
+\draw [fill=boxgreyfill, line width=.4pt, draw=boxgreyline] ($ (`r margin_x`,`r donutboxhdtop_y`) $) rectangle ($ (`r donutbox1_x`,`r donutboxhdbt_y`) $) node[pos=.5] {\textcolor{boxtext}{\fontsize{`r header_font`}{`r header_font2`}\selectfont\raggedright\fontdimen3\font=0pt\BkCdFont Gender}};
+\draw [line width=.4pt, draw=boxgreyline] ($ (`r margin_x`,`r donutboxhdbt_y`) $) rectangle ($ (`r donutbox1_x`,`r donutboxbottom_y`) $);
+\draw [fill=boxgreyfill, line width=.4pt, draw=boxgreyline] ($ (`r donutbox21_x`,`r donutboxhdtop_y`) $) rectangle ($ (`r donutbox22_x`,`r donutboxhdbt_y`) $) node[pos=.5] {\textcolor{boxtext}{\fontsize{`r header_font`}{`r header_font2`}\selectfont\raggedright\fontdimen3\font=0pt\BkCdFont Hispanic/Latino Students}};
+\draw [line width=.4pt, draw=boxgreyline] ($ (`r donutbox21_x`,`r donutboxhdbt_y`) $) rectangle ($ (`r donutbox22_x`,`r donutboxbottom_y`) $);
+\draw [fill=boxgreyfill, line width=.4pt, draw=boxgreyline] ($ (`r donutbox31_x`,`r donutboxhdtop_y`) $) rectangle ($ (`r donutbox32_x`,`r donutboxhdbt_y`) $) node[pos=.5] {\textcolor{boxtext}{\fontsize{`r header_font`}{`r header_font2`}\selectfont\raggedright\fontdimen3\font=0pt\BkCdFont Race/Ethnicity}};
+\draw [line width=.4pt, draw=boxgreyline] ($ (`r donutbox31_x`,`r donutboxhdbt_y`) $) rectangle ($ (`r donutbox32_x`,`r donutboxbottom_y`) $);
+\draw [fill=boxgreyfill, line width=.4pt, draw=boxgreyline] ($ (`r donutbox41_x`,`r donutboxhdtop_y`) $) rectangle ($ (`r donutbox42_x`,`r donutboxhdbt_y`) $) node[pos=.5] {\textcolor{boxtext}{\fontsize{`r header_font`}{`r header_font2`}\selectfont\raggedright\fontdimen3\font=0pt\BkCdFont 1st-Generation College}};
+\draw [line width=.4pt, draw=boxgreyline] ($ (`r donutbox41_x`,`r donutboxhdbt_y`) $) rectangle ($ (`r donutbox42_x`,`r donutboxbottom_y`) $);
+\end{tikzpicture}
+}
+\Donuts
+
+
+<!-- bar graph boxes -->
+\newcommand*{\Bars} {
+\begin{tikzpicture}[overlay,remember picture]
+\draw [line width=.4pt, draw=boxgreyline] ($ (`r bar_xy`,`r barbox11_y`) $) rectangle ($ (`r barbox1_x`,`r barbox12_y`) $);
+\draw [fill=boxgreyfill, line width=.4pt, draw=boxgreyline] ($ (`r barhead11_x`,`r barhead1_y`) $) rectangle ($ (`r barhead12_x`,`r barhead2_y`) $) node[pos=.5] {
+  \begin{minipage}{.28\linewidth}
+    \begin{flushleft}
+      \textcolor{boxtext}{\fontsize{`r figure_font`}{`r figure_font2`}\selectfont\raggedright\fontdimen3\font=0pt\BkCdFont Figure 1. Do you plan to continue your\\[1.5mm] education at some time in the future?}
+    \end{flushleft}
+  \end{minipage}}; 
+\draw [line width=.4pt, draw=boxgreyline] ($ (`r barbox21_x`,`r barbox11_y`) $) rectangle ($ (`r barbox22_x`,`r barbox12_y`) $);
+\draw [fill=boxgreyfill, line width=.4pt, draw=boxgreyline] ($ (`r barhead21_x`,`r barhead1_y`) $) rectangle ($ (`r barhead22_x`,`r barhead21_y`) $) node[pos=.5] {\textcolor{boxtext}{\fontsize{`r figure_font`}{`r figure_font2`}\selectfont\raggedright\fontdimen3\font=0pt\BkCdFont \shortstack{Figure 2. What college are you planning to attend?\textsuperscript{1}}}};
+\draw [line width=.4pt, draw=boxgreyline] ($ (`r barbox31_x`,`r barbox31_y`) $) rectangle ($ (`r barbox32_x`,`r barbox32_y`) $);
+\draw [fill=boxgreyfill, line width=.4pt, draw=boxgreyline] ($ (`r barhead31_x`,`r barhead3_y`) $) rectangle ($ (`r barhead32_x`,`r barhead31_y`) $) node[pos=.5] {\textcolor{boxtext}{\fontsize{`r figure_font`}{`r figure_font2`}\selectfont\raggedright\fontdimen3\font=0pt\BkCdFont Figure 3. Do you plan to earn a certificate, an associate’s degree, or a bachelor’s degree?}};
+
+<!-- bar graphs -->
+\node[anchor=north west, xshift=`r bar1_x`cm, yshift=`r bar1_y`cm] at (current page.north west) {
+  \pgfuseimage{stackbar}};
+\node[anchor=north west, xshift=`r bar2_x`cm, yshift=`r bar2_y`cm] at (current page.north west) {
+  \pgfuseimage{sidebar}};
+\node[anchor=north west, xshift=`r bar3_x`cm, yshift=`r bar3_y`cm] at (current page.north west) {
+  \pgfuseimage{longbar}};
+<!-- notes -->
+\node[anchor=north west, xshift=`r footnote_x`cm, yshift=`r footnote_y`cm, text width=`r toptext_w`cm] at (current page.north west) {\textcolor{footnotegrey}{\fontsize{`r footnote_font`}{`r footnote_font2`}\selectfont \raggedright   \fontdimen3\font=0pt \BkCdFont \textsuperscript{1}These\thinspace are\thinspace responses\thinspace for\thinspace students\thinspace who\thinspace stated\thinspace that\thinspace they\thinspace plan\thinspace to\thinspace attend\thinspace college\thinspace in\thinspace fall\thinspace 2021.}};
+\node[anchor=north west, xshift=`r headnote_x`cm, yshift=`r headnote_y`cm, text width=`r toptext_w`cm] at (current page.north west) {\textcolor{blue}{\fontsize{`r text_font`}{`r text_font2`}\selectfont \raggedright   \fontdimen3\font=0pt \BkCdItFont Aspiration of students for the college they plan to attend in fall 2021\textsuperscript{1}}};
+\node[anchor=north west, xshift=`r footnote2_x`cm, yshift=`r footnote2_y`cm, text width=`r toptext_w`cm] at (current page.north west) {\textcolor{footnotegrey}{\fontsize{`r footnote_font`}{`r footnote_font2`}\selectfont \raggedright   \fontdimen3\font=0pt \BkCdFont \textsuperscript{1}These\thinspace are\thinspace responses\thinspace for\thinspace students\thinspace who\thinspace stated\thinspace that\thinspace they\thinspace plan\thinspace to\thinspace attend\thinspace college\thinspace in\thinspace fall\thinspace 2021.}};
+
+\end{tikzpicture}
+}
+\Bars
+
+
+<!-- AIR footer -->
+\newcommand*{\Footer} {
+\begin{tikzpicture}[overlay,remember picture]
+<!-- box -->
+\draw [fill=darkblue] ($ (`r margin_x`,`r foot1_y`) $) rectangle ($ (`r foot2_x`,`r foot2_y`) $);
+<!-- AIR -->
+\node[text width=`r footair_w`cm] at (`r footair1_x`, `r footair1_y`) {\textcolor{white}{\fontsize{`r text_font`}{`r text_font2`}\selectfont\raggedright\fontdimen3\font=0pt\BkCdFont AMERICAN INSTITUTES FOR RESEARCH® | AIR.ORG}};
+<!-- AIR logo -->
+\node[anchor=north west, xshift=`r airlogo_x`cm, yshift=`r airlogo_y`cm] at (current page.north west) {
+  \pgfuseimage{airlogo}};
+
+\end{tikzpicture}
+}
+\Footer
+
+
+
+<!-- SECOND PAGE -->
+\newpage
+
+```{r, include=FALSE}
+logo_y2 <- logo_y + .07
+# second header locations
+logo_w2 <- 57.9984 * cm
+logo_h2 <- 51.535 * cm
+toptext_x2 <- margin_x + logo_w2 + topmargin_xy
+# second bar graphs
+margin_x2 <- 28.3636 * cm
+barbox11_y2 <- topbar_y - logo_h2 - 1.25
+barbox1_x2 <- margin_x2 + 9.04
+barbox12_y2 <- barbox11_y2 - 7.54
+barhead11_x2 <- .75
+barhead1_y2 <- topbar_y - logo_h2 - .91
+barhead12_x2 <- barhead11_x2 + 8.64
+barhead2_y2 <- barhead1_y2 - 1.19
+barbox21_x2 <- barbox1_x2 + 1.63
+barbox22_x2 <- barbox21_x2 + 9.04
+barbox22_y2 <- barbox11_y2 - 7.22
+barhead21_x2 <- barhead12_x2 + 2.03
+barhead22_x2 <- barhead21_x2 + 7.57
+barhead22_y2 <- barhead1_y2 - 1.64
+barbox31_y2 <- barbox12_y2 - .81
+barbox32_y2 <- barbox31_y2 - 7.2
+barhead3_y2 <- barbox12_y2 -.48
+barhead32_x2 <- barhead11_x2 + 7.22
+barhead32_y2 <- barhead3_y2 - 1.18
+barbox41_x2 <- barbox1_x2 + 1.57
+barbox41_y2 <- barbox22_y2 - 1.12
+barbox42_x2 <- barbox41_x2 + 9.04
+barhead41_x2 <- barbox1_x2 + 1.39
+barhead4_y2 <- barbox22_y2 - .76
+barhead42_x2 <- barhead41_x2 + 7.4
+barhead42_y2 <- barhead4_y2 - 1.18
+bar4_x <- margin_x2 + 1.1
+bar4_y <- barhead2_y2 -.6 - adjustmargin1
+bar4_h <- 6.1
+bar5_x <- barbox21_x2 + .1
+bar5_y <- barhead2_y2 -1.42
+bar5_w <- 8.8
+bar6_x <- margin_x2 + .82
+bar6_y <- barhead32_y2 -.85 
+bar6_h <- 5.45
+bar7_x <- barbox41_x2 + .58
+bar7_y <- barhead42_y2 - .7
+bar7_h <- 5.89
+# second footer
+foot1_y2 <- barbox32_y2 - 1.43 + adjustmargin2
+foot2_y2 <- foot1_y2 - 5.38
+foottext_x <- margin_x + .6
+foottext_y <- foot1_y2 - 1.8 
+foottext_w <- 19.2
+```
+
+<!-- images -->
+\pgfdeclareimage[width=`r logo_w2`cm,height=`r logo_h2`cm]{textBox2}{images/textbox}
+\pgfdeclareimage[height=`r bar4_h`cm]{bar4}{images/bar4}
+\pgfdeclareimage[width=`r bar5_w`cm]{bar5}{images/bar5}
+\pgfdeclareimage[height=`r bar6_h`cm]{bar6}{images/bar6}
+\pgfdeclareimage[height=`r bar7_h`cm]{bar7}{images/bar7}
+
+<!-- top with date, logo, school text -->
+\newcommand*{\SecondHeader}{
+\begin{tikzpicture}[overlay,remember picture]
+<!-- bar -->
+\draw [fill=darkblue] ($ (`r margin_x`,`r margin_y`) $) rectangle ($ (`r topbar_width`,`r topbar_y`) $);
+<!-- date -->
+\node[anchor=north east, xshift=`r date_x`cm, yshift=`r date_y`cm, text width=20cm] at (current page.north east) {
+  \textcolor{skyblue}{\fontsize{12}{14}\selectfont \raggedright \fontdimen3\font=0pt \MdCdFont May 2021}};
+<!-- logo -->
+\node[anchor=north west, xshift=`r margin_x`cm, yshift=`r logo_y2`cm] at (current page.north west) {
+  \pgfuseimage{textBox2}};
+<!-- school name and text -->
+\node[anchor=north west, xshift=`r toptext_x2`cm, yshift=`r toptext_y`cm, text width=`r toptext_w`cm] at (current page.north west) {
+  \textcolor{blue}{\fontsize{`r survey_font`}{`r survey_font2`}\selectfont \raggedright   \fontdimen3\font=0pt \BkCdFont{SURVEY REPORT—}\BkCdItFont{Continued}}
+  \par \vspace{5.3mm}
+  \textcolor{blue}{\fontsize{`r school2_font`}{`r school2_font2`}\selectfont \raggedright   \fontdimen3\font=0pt \MdCdFont `r school_name`}};
+\end{tikzpicture}
+}
+\SecondHeader
+
+
+<!-- bar graphs -->
+\newcommand*{\SecondBars} {
+\begin{tikzpicture}[overlay,remember picture]
+<!-- bar graph boxes -->
+\draw [line width=.4pt, draw=boxgreyline] ($ (`r margin_x2`,`r barbox11_y2`) $) rectangle ($ (`r barbox1_x2`,`r barbox12_y2`) $);
+\draw [fill=boxgreyfill, line width=.4pt, draw=boxgreyline] ($ (`r barhead11_x2`,`r barhead1_y2`) $) rectangle ($ (`r barhead12_x2`,`r barhead2_y2`) $) node[pos=.5] {
+\begin{minipage}{.37\linewidth}
+  \begin{flushleft}
+    \textcolor{boxtext}{\fontsize{`r figure_font`}{`r figure_font2`}\selectfont\raggedright\fontdimen3\font=0pt\BkCdFont Figure 4. Where have you gone for information about\\[1.5mm] the entrance requirements of various colleges?}
+    \end{flushleft}
+  \end{minipage}};
+
+\draw [line width=.4pt, draw=boxgreyline] ($ (`r barbox21_x2`,`r barbox11_y2`) $) rectangle ($ (`r barbox22_x2`,`r barbox22_y2`) $);
+\draw [fill=boxgreyfill, line width=.4pt, draw=boxgreyline] ($ (`r barhead21_x2`,`r barhead1_y2`) $) rectangle ($ (`r barhead22_x2`,`r barhead22_y2`) $) node[pos=.5] {
+  \begin{minipage}{.325\linewidth}
+    \begin{flushleft} \textcolor{boxtext}{\fontsize{`r figure_font`}{`r figure_font2`}\selectfont\raggedright\fontdimen3\font=0pt\BkCdFont Figure 5. To the best of your knowledge, what\\ assistance did your high school offer to help\\[1.2mm] with your postsecondary plans?}
+    \end{flushleft}
+  \end{minipage}};
+\draw [line width=.4pt, draw=boxgreyline] ($ (`r margin_x2`,`r barbox31_y2`) $) rectangle ($ (`r barbox1_x2`,`r barbox32_y2`) $);
+\draw [fill=boxgreyfill, line width=.4pt, draw=boxgreyline] ($ (`r barhead11_x2`,`r barhead3_y2`) $) rectangle ($ (`r barhead32_x2`,`r barhead32_y2`) $) node[pos=.5]{
+  \begin{minipage}{.3\linewidth}
+    \begin{flushleft}
+      \textcolor{boxtext}{\fontsize{`r figure_font`}{`r figure_font2`}\selectfont\raggedright\fontdimen3\font=0pt\BkCdFont Figure 6. Have you, or are you planning to,\\[1.5mm] fill out a FAFSA for the fall 2021 semester?}
+  \end{flushleft}
+    \end{minipage}};
+\draw [line width=.4pt, draw=boxgreyline] ($ (`r barbox41_x2`,`r barbox41_y2`) $) rectangle ($ (`r barbox42_x2`,`r barbox32_y2`) $);
+\draw [fill=boxgreyfill, line width=.4pt, draw=boxgreyline] ($ (`r barhead41_x2`,`r barhead4_y2`) $) rectangle ($ (`r barhead42_x2`,`r barhead42_y2`) $) node[pos=.5]{
+  \begin{minipage}{.325\linewidth}
+    \begin{flushleft}
+      \textcolor{boxtext}{\fontsize{`r figure_font`}{`r figure_font2`}\selectfont\raggedright\fontdimen3\font=0pt\BkCdFont Figure 7. Have you done any of the following\\[1.4mm] to learn about applying for financial aid?}
+    \end{flushleft}
+  \end{minipage}};
+
+<!-- bar graphs -->
+\node[anchor=north west, xshift=`r bar4_x`cm, yshift=`r bar4_y`cm] at (current page.north west) {
+  \pgfuseimage{bar4}};
+\node[anchor=north west, xshift=`r bar5_x`cm, yshift=`r bar5_y`cm] at (current page.north west) {
+  \pgfuseimage{bar5}};
+\node[anchor=north west, xshift=`r bar6_x`cm, yshift=`r bar6_y`cm] at (current page.north west) {
+  \pgfuseimage{bar6}};
+\node[anchor=north west, xshift=`r bar7_x`cm, yshift=`r bar7_y`cm] at (current page.north west) {
+  \pgfuseimage{bar7}};
+\end{tikzpicture}
+}
+\SecondBars
+
+<!-- second footer -->
+\newcommand*{\SecondFooter} {
+\begin{tikzpicture}[overlay,remember picture]
+<!-- box -->
+\draw [fill=darkblue] ($ (`r margin_x`,`r foot1_y2`) $) rectangle ($ (`r foot2_x`,`r foot2_y2`) $);
+<!-- text -->
+\node[anchor=north west, xshift=`r foottext_x`cm, yshift=`r foottext_y`cm, text width=`r foottext_w`cm] at (current page.north west) {
+  \fontsize{`r text2_font`}{`r text2_font2`}\selectfont \raggedright \fontdimen3\font=0pt \BkCdFont {\textcolor{white}{This survey is part of a larger study called Text4college. To learn more about the Text4college study, visit} \textcolor{linkblue}{\href{www.text4college.com}{www.text4college.com}}\textcolor{white}{.}}
+  \par \vspace{1mm}
+  \fontsize{`r text2_font`}{`r text2_font2`}\selectfont \raggedright \fontdimen3\font=0pt \BkCdFont {\textcolor{white}{If you have questions about these data or the study, you can contact Christina LiCalsi, the Principal Investigator, at} \textcolor{linkblue}{clicalsi@air.org}\textcolor{white}{.}}
+  \par \vspace{5mm}
+\textcolor{white}{\fontsize{`r text2_font`}{`r text2_font2`}\selectfont\raggedright\fontdimen3\font=0pt\BkCdFont The Text4College study is funded by a grant from the U.S. Department of Education’s Institute for Education Sciences,\\ GAN R305A190074.}
+  \par \vspace{5mm}
+\textcolor{white}{\fontsize{`r text_font`}{`r text_font2`}\selectfont\raggedright\fontdimen3\font=0pt\BkCdFont AMERICAN INSTITUTES FOR RESEARCH® | AIR.ORG}
+  \par \vspace{2mm}
+\textcolor{white}{\fontsize{`r text_font`}{`r text_font2`}\selectfont\raggedright\fontdimen3\font=0pt\BkCdFont Copyright © 2021 American Institutes for Research®. All rights reserved.}
+};
+<!-- AIR logo -->
+\node[anchor=north west, xshift=`r airlogo_x`cm, yshift=`r airlogo_y`cm] at (current page.north west) {
+  \pgfuseimage{airlogo}};
+
+\end{tikzpicture}
+}
+\SecondFooter

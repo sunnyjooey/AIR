@@ -1,0 +1,356 @@
+body {
+  font-family: "Open Sans";
+}
+@media screen and (max-width: 720px) {
+
+  div.tab-content:first-child {
+    padding-top: 100px;
+  }
+
+}
+
+a {
+  color: black;
+}
+.navbar {
+  left:0px;
+  right:0px;
+  border-color: transparent;
+  position:fixed;
+}
+
+
+
+
+.navbar > div:first-child {
+  background-color: #45458f;
+  display: block;
+  margin-bottom: 0px;
+}
+
+.navbar-default .navbar-nav > li > a {
+  font-size: 18px;
+  color: #ffffff;
+  text-decoration: solid;
+}
+
+p.helpText {
+  text-align: left;
+  line-height: 1.4;
+}
+
+.navbar-default .navbar-nav > li > a:hover, a:focus {
+  background-color: transparent;
+  color: #18bc9c;
+}
+
+.navbar-default .navbar-nav > .active > a {
+  color: #444444;
+  background-color: #faf9f7;
+}
+
+a:active, a:link {
+  color: #45458f;
+}
+
+label.control-label {
+  font-weight: 600;
+  color: #45458f;
+  font-size: 17px;
+}
+
+form.well {
+  background-color: #faf9f7;
+}
+
+/* content is pushed down - also see mobile section at top */
+div.tab-content:first-child {
+  margin-top: 70px;
+}
+
+div.selectize-input .items .has-options .not-full {
+  border: 1px solid #ADADAD;
+  border-radius: 0px;
+  font-size: 15px;
+}
+
+span.irs-bar {
+  background-color: #45458f;
+  border-top: 1px solid #45458f;
+  border-bottom: 1px solid #45458f
+}
+
+span.irs-from, span.irs-to {
+  background-color: #45458f;
+  color: #ffffff;
+}
+
+button.btn {
+  text-align: left;
+}
+
+div[id$="resetInput"] {
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+div[id$="plotCustom"] {
+  border: 1px solid #ffffff;
+  border-radius:0px;
+}
+div[id$="DownloadToggle"] {
+  border: 1px solid #ffffff;
+  border-radius:0px;
+}
+
+div[id$="plotCustomLabels"] {
+  font-size: 16px;
+}
+
+input.shinyjs-resettable {
+  background-color:#FFFFFF;
+  border: 1px solid #ADADAD;
+  border-radius: 0px;
+}
+
+
+div.my-breadcrumb > i {
+ font-size: 18px;
+}
+
+div.selectize-input {
+  background: url('form-elements-with-border.svg') no-repeat right #FFFFFF;
+  font-size: 15px;
+  color: #000000;
+  font-weight: 500;
+  border: 1px solid #ADADAD;
+  border-radius:0px;
+}
+
+div.selectize-input.items.has-options.not-full.focus.input-active {
+  background: url('form-elements-with-border.svg') no-repeat right #FFFFFF;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.selectize-control.single .selectize-input:after {
+  content: none !important;
+  -webkit-appearance: none;
+}
+
+.selectize-control.single .selectize-input.dropdown-active:after {
+  content: none !important;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+button.btn.dropdown-toggle.bs-placeholder {
+  background: url('form-elements-with-border.svg') no-repeat right #ffffff;
+  border: 1px solid #ADADAD;
+  text-transform: none;
+  font-size: 15px;
+  box-shadow: none;
+  border-radius: 0px;
+  padding-top:0px;
+  padding-bottom:5px;
+  padding-left:10px;
+}
+button > span.bs-caret {
+  color:transparent;
+}
+
+div.option {
+  color: #45458f;
+  font-size: 15px;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #45458f !important;
+  border-color: #45458f !important;
+  margin-right:0px !important;
+}
+
+input[type="checkbox"]:checked:after {
+  background-color: #45458f !important;
+  border-color: #45458f !important;
+  margin-right:0px !important;
+}
+
+input[type="checkbox"]:after {
+  background-color: #45458f !important;
+  border-color: #45458f !important;
+  margin-right:0px !important;
+}
+
+div.checkbox > label > span {
+  margin-left:5px;
+}
+
+.dropdown-toggle.bs-placeholder, .bootstrap-select>.dropdown-toggle.bs-placeholder:active, .bootstrap-select>.dropdown-toggle.bs-placeholder:focus, .bootstrap-select>.dropdown-toggle.bs-placeholder:hover {
+    color: #ADADAD !important;
+}
+
+
+select[name^="DataTables"] {
+  width: 50px;
+}
+
+div.selectize-input.items.has-options.disabled.locked {
+  background-image: none;
+  opacity: 1.0;
+}
+
+#loading_page {
+  position: fixed; /* or absolute */
+  top: 50%;
+  left: 50%;
+  /* bring your own prefixes */
+  transform: translate(-50%, -50%);
+}
+
+blockquote {
+  background: #f9f9f9;
+}
+
+blockquote p {
+  display: inline;
+}
+
+blockquote span {
+  font-weight: 800;
+}
+
+
+div.shiny-plot-output > img {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 50px;
+}
+
+.panel-primary {
+  border-color: #45458f;
+}
+.panel-primary > .panel-heading {
+  color: #fff;
+  background-color: #45458f;
+  border-color: #45458f;
+}
+.panel-primary > .panel-heading + .panel-collapse > .panel-body {
+  border-top-color: #45458f;
+}
+.panel-primary > .panel-heading .badge {
+  color: #45458f;
+  background-color: #fff;
+}
+.panel-primary > .panel-footer + .panel-collapse > .panel-body {
+  border-bottom-color: #45458f;
+}
+
+div.item {
+  background: #71717a !important;
+  color: white !important;
+  padding-left:7px;
+}
+.selectize-dropdown-content .active {
+  background: #71717a !important;
+  color: white !important;
+}
+
+
+.panel-default {
+  border-color: #f5f5f5;
+}
+.panel-default > .panel-heading {
+  color: black;
+  background-color: #faf9f7;
+  border-color: #f5f5f5;
+}
+.panel-default > .panel-heading + .panel-collapse > .panel-body {
+  border-top-color: #f5f5f5;
+}
+.panel-default > .panel-heading .badge {
+  color: #faf9f7;
+  background-color: #71717a;
+}
+.panel-default > .panel-footer + .panel-collapse > .panel-body {
+  border-bottom-color: #f5f5f5;
+}
+
+.btn-default {
+  color: #fff;
+  background-color: #45458f;
+  border-color: #fff;
+}
+
+.btn-default:link {
+  color: #fff;
+  background-color: #45458f;
+  border-color: #fff;
+}
+
+.btn-default:hover {
+  color: #fff;
+  background-color: #45458f;
+  border-color: #45458f;
+}
+
+.table {
+  display: block;
+  overflow: auto;
+}
+
+h1, .h1,
+h2, .h2,
+h3, .h3,
+h4, .h4 {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+#hidden h2 {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+h2 {
+  font-weight: 700;
+  color: #45458f;
+  font-size: 20px;
+}
+
+
+h3 {
+  font-weight: 600;
+  color: #45458f;
+  font-size: 17px;
+}
+
+h4 {
+  font-weight: 400;
+  color: #45458f;
+  font-size: 14px;
+}
+
+ol, ul {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+#mainTool-logicText {
+  color: #71717a;
+  font-size: 10px;
+}
+
+.glyphicon {
+    margin-right: 10px;
+    font-size: 10px;
+    color: inherit;
+}
+
+
+input.form-control {
+  color: black;
+}
+
+input.form-control::placeholder {
+  color: #ADADAD !important;
+}

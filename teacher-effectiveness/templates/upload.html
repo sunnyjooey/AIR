@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% if g.user %}
+    <h1>Upload Your Video/Audio File</h1>
+
+    <form action="/uploaded" method="POST" enctype="multipart/form-data">
+        <label for="user_file">Upload Your File</label>
+        <br></br>
+        <input type="file" name="user_file">
+        <br></br>
+        <p> Subject/Domain <input type="text" name = "subject" /> </p>
+        <p> Grade <input type="text" name = "grade" /></p>
+        <p> Teacher Name <input type="text" name = "teacher" /></p>
+        <p> Date Created <input type="text" name = "date" /></p>
+
+
+        <button type="submit">Upload</button>
+
+    </form>
+    {% else %}
+    <h1> You need to log in to upload files. Please go back to the <a href = "{{ url_for('main') }}">home page.</a></h1>
+    {% endif %}
+{% endblock %}

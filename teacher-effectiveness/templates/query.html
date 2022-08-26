@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Query Class Video {% endblock %}</h1>
+
+{% endblock %}
+
+{% block content %}
+{% if g.user %}
+<div class="panel panel-default">
+  		<div class="panel-heading">
+    		<h3 class="panel-title">Query Videos </h3>
+  		</div>
+  		<div class="panel-body">
+        <!-- Form to show all matched videos -->
+            <form method="POST" action = "{{ url_for('query') }}">
+                <div class ="row">
+                    <div class="col-sm-4">
+                        <h3> Subject </h3>
+                <select name="subject" id="subject" class="selectpicker">
+                    <option>Select One Subject</option>
+                    {% for subject in subject_list %}
+                    <option value="{{ subject }}">{{ subject }}</option>
+                    {% endfor %}
+                </select>
+                        </div>
+                <div class="col-sm-4">
+                    <h3> Grade </h3>
+                <select name="grade" id="grade" class="selectpicker">
+                    <option>Select One Grade</option>
+                    {% for grade in grade_list %}
+                    <option value="{{ grade }}">{{ grade }}</option>
+                    {% endfor %}
+                </select>
+                    </div>
+                    <div class="col-sm-4">
+                    <h3> Weekday </h3>
+                <select name="weekday" id="weekday" class="selectpicker" multiple>
+                    <option>Select One Weekday</option>
+                    {% for weekday in weekday_list %}
+                    <option value="{{ weekday }}">{{ weekday }}</option>
+                    {% endfor %}
+                </select>
+                    </div>
+
+                </div>
+                <br>
+                <button type="submit">Query</button>
+            </form>
+        </div>
+</div>
+
+
+{% if showResults %}
+<div class="panel panel-default">
+  		<div class="panel-heading">
+    		<h3 class="panel-title">Show results </h3>
+  		</div>
+  		<div class="panel-body">
+            {% if results|length > 0 %}
+            <table id="query-results" align="center">
+            <tbody>
+
+                <tr>
+                    <th> Action </th>
+                    <th> Uploading Timestamp </th>
+                    <th> Subject </th>
+                    <th> Grade </th>
+                    <th> Class Date </th>
+                </tr>
+
+                 {% for index, row in results.items() %}
+                <tr>
+                    <td> <a href= {{ url_for("analysis", file_key = row['MD5']) }} class="btn btn-info" role="button">View Report</a> </td>
+                    <td> {{ row['class_timestamp'] }} </td>
+                    <td> {{ row['subject'] }} </td>
+                    <td> {{ row['grade'] }} </td>
+                    <td> {{ row['date'] }} </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+            </table>
+            {% else %}
+            <p> There are no mathching records. </p>
+            {% endif %}
+
+
+        </div>
+</div>
+
+{% endif %} <!-- if showResults %} -->
+
+
+{% endif %} <!-- if g.user %} -->
+
+{% endblock %}

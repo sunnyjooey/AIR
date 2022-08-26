@@ -1,0 +1,165 @@
+id: FloodIndex
+name: Flood Index
+maintainer:
+  - name: Peter Mburu
+    email: peter.mburu@kimetrica.com
+author:
+  - name: Peter Mburu
+    email: peter.mburu@kimetrica.com
+version: 0.1.0
+description: >-
+  The flood index is daily flash flood indicator which uses dynamic and distributed
+  runoff co‐efficient which depends on the initial soil moisture. This co‐efficient,
+  namely the European Runoff Index based on Climatology (ERIC), is used to
+  weigh each contribution of the upstream precipitation proportionally to the
+  initial soil moisture.
+  The input variables taken into consideration are:
+    - Rainfall flux
+    - Surface runoff
+    - Subsurface runoff
+    - Digital Elevation Model
+    - River basin
+
+input_files:
+  - name: FLDAS monthly rainfall flux
+    description: |-
+      The month rainfall flux is extrcated from monthly FLDAS data. The spatial resolution of about 0.1 degree.
+    metadata:
+      unit: kg m-2 s-1
+      source: FLDAS
+      uri: https://hydro1.gesdisc.eosdis.nasa.gov/data/FLDAS/FLDAS_NOAH01_C_GL_M.001/
+
+  - name: FLDAS monthly surface runoff data
+    description: |-
+      The surface runoff data is for East Africa Region and has a spatial.
+      resolution of 0.1 degree.
+    metadata:
+      unit: kg m-2 s-1
+      source: FLDAS
+      uri: https://hydro1.gesdisc.eosdis.nasa.gov/data/FLDAS/FLDAS_NOAH01_C_GL_M.001/
+
+  - name: FLDAS monthly subsurface runoff data
+    description: |-
+      The subsurface runoff data is for East Africa Region and has a spatial
+      resolution of 0.1 degree.
+    metadata:
+      unit: kg m-2 s-1
+      source: FLDAS
+      uri: https://hydro1.gesdisc.eosdis.nasa.gov/data/FLDAS/FLDAS_NOAH01_C_GL_M.001/
+
+  - name: FLDAS monthly soil moisture content
+    description: |-
+      The soil moisture data is for East Africa Region and has a spatial resolution.
+      of 0.1 degree.
+    metadata:
+      unit: m^3 m-3
+      source: FLDAS
+      uri: https://hydro1.gesdisc.eosdis.nasa.gov/data/FLDAS/FLDAS_NOAH01_C_GL_M.001/
+
+  - name: Digital Elevation Model
+    description: |
+      A raster file for digital elevation model.
+    metadata:
+      source: Hydroshed
+      uri: https://data.kimetrica.com/dataset/f25f2152-e999-415f-956f-3a7c2eb2b723/resource/befe08dc-7e84-4132-ba56-1be39d25c0d7/download/dem_ea_3sec_clip21.tif
+
+  - name: River basin
+    description: |-
+      The river sub-basin extracted from hydrosheds.
+    metadata:
+      source: Hydroshed
+      uri: https://data.kimetrica.com/dataset/f25f2152-e999-415f-956f-3a7c2eb2b723/resource/1c3b4411-5190-4091-a5fa-73931ea77412/download/subbasin_eth_ss.zip
+
+output_files:
+  - name: "{hash}/{time}.tif"
+    description: |-
+      monthly rasterfiles created by the FloodedAreaGeotiff Task. The raster files show areas
+      that are flooded.
+    metadata:
+      - name:
+        description: pixel value of 1 indicate flooding.
+  - name: "flooding_in_{self.country_level}_{self.rainfall_scenario}_rainfall_{hash}.geojson"
+    description: |-
+        The geojson file from the task FloodedAreaGeoJson. The task convert convert the output of the tasks FloodedAreaGeotiff to geojson format across the time interval specified in the GlobalParameters.
+    format: geoJSON
+    metadata:
+    variables:
+        - name: flooded
+          description: The areas that are flood.
+        - name: start
+          description: start date of the month (useful for interactive map).
+        - name: end
+          description: Last day of the month (useful for interactive map).
+        - name: geometry
+          description: polygon coordinates (WGS84).
+
+parameters:
+  - name: admin_level
+    description: Select source data at admin level.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - admin0
+        - admin1
+        - admin2
+
+      default: admin2
+  - name: country_level
+    description: Select source data at country level.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - South Sudan
+        - Ethiopia
+      default: South Sudan
+  - time:
+    description: This is the time window the end user is interested in.
+    metadata:
+      type: DateIntervalParameter
+      # note: The end date is non-inclusive!
+      default: 2017-01-01-2017-06-01
+  - geography:
+    description: This is the AOI that is applied broadly throughout the models, and is used as a mask for general geography filtering.
+    metadata:
+      type: GeoParameter
+      default:
+        {
+          "coordinates":
+            [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+          "type": "Polygon",
+        }
+  - rainfall_scenario:
+    description: The rainfall scenario based on historical monthly average of the precipitation values. High value is estimated by 2x mean, and low value is estimated by 0.25x mean.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - normal
+        - high
+        - low
+        - mean
+      default: normal
+  - rainfall_scenario_time:
+    description: The selected time window in which rainfall_scenario is applied. This time interval must fall within time.
+    metadata:
+      type: DateIntervalParameter
+      default: 2017-05-01-2017-05-02
+  - rainfall_scenario_geography:
+    description: The geography affected by the rainfall scenario parameter.
+    metadata:
+      type: GeoParameter
+      default:
+        {
+          "coordinates":
+            [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+          "type": "Polygon",
+        }
+  - flood_index_threshold:
+    description: The European runoff index threshold of identifying flooded pixel.
+    metadata:
+      type: FloatParameter
+      default: 1.0
+  - soil_moisture_threshold:
+    description: The minimum soil moisture content for pixel to identified as flooded.
+    metadata:
+      type: FloatParameter
+      default: 0.42

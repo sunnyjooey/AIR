@@ -1,0 +1,46 @@
+version: "2.4"
+
+services:
+  # Overriding the controller service from kiluigi/docker-compose
+  # We can't use `extend`, because "controller" uses `depends_on`, but we can
+  # override values
+  # We use a different Dockerfile to add DSSAT binaries
+  kimetrica-darpa-models:
+    image: kimetrica-darpa-models
+    build:
+      dockerfile: docker/kimetrica-darpa-models/Dockerfile
+      context: ${PWD}
+    logging:
+      driver: "json-file"
+      options:
+          max-size: "200m"
+    # DARPA specific variables
+    environment:
+      - APP=${APP}
+      - ENV=${ENV}
+      - UID=${UID}
+      - LUIGI_DEFAULT_PARAMS=workers=2,worker_timeout=120
+      - LUIGI_DEFAULT_SCHEDULER_URL=http://scheduler:8082/
+      - LUIGI_LOGGING_CONF_FILE=${LUIGI_LOGGING_CONF_FILE}
+      - KILUIGI_INTERMEDIATETARGET_BACKEND_CLASS
+      - KILUIGI_INTERMEDIATETARGET_ROOT_PATH
+      - KILUIGI_FINALTARGET_BACKEND_CLASS
+      - KILUIGI_FINALTARGET_ROOT_PATH
+      - LUIGI_CACHE_DIR=${LUIGI_CACHE_DIR}
+      - LUIGI_CKAN_USERNAME=${LUIGI_CKAN_USERNAME}
+      - LUIGI_CKAN_PASSWORD=${LUIGI_CKAN_PASSWORD}
+      - LUIGI_CKAN_ADDRESS=${LUIGI_CKAN_ADDRESS}
+      - LUIGI_OUTPUT_PATH=${LUIGI_OUTPUT_PATH}
+      - LUIGI_EARTHDATA_USERNAME=${LUIGI_EARTHDATA_USERNAME}
+      - LUIGI_EARTHDATA_PASSWORD=${LUIGI_EARTHDATA_PASSWORD}
+      - KILUIGI_INTERMEDIATETARGET_BACKEND_CLASS=${KILUIGI_INTERMEDIATETARGET_BACKEND_CLASS}
+      - KILUIGI_INTERMEDIATETARGET_ROOT_PATH=${KILUIGI_INTERMEDIATETARGET_ROOT_PATH}
+      - KILUIGI_FINALTARGET_BACKEND_CLASS=${KILUIGI_FINALTARGET_BACKEND_CLASS}
+      - KILUIGI_FINALTARGET_ROOT_PATH=${KILUIGI_FINALTARGET_ROOT_PATH}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - LUIGI_CDS_API_KEY=${LUIGI_CDS_API_KEY}
+      - LUIGI_CDS_API_UID=${LUIGI_CDS_API_UID}
+      - LUIGI_MAP_API_KEY=${LUIGI_MAP_API_KEY}
+      - DESCARTESLABS_CLIENT_ID=${DESCARTESLABS_CLIENT_ID}
+      - DESCARTESLABS_REFRESH_TOKEN=${DESCARTESLABS_REFRESH_TOKEN}

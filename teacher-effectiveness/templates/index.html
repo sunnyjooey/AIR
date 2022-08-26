@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}Welcome{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    {% if g.user %}
+        <!-- Upload data -->
+        {% if config.env != 'public' %}
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Upload data </h3>
+                </div>
+                <div class="panel-body">
+                    <p> Teachers can upload their class videos by clicking on <a href="{{ url_for('upload') }}">this
+                        link</a>.</p>
+                    <br>
+                    <p> Instruction to upload videos: </p>
+                    <ul>
+                        <li> Browse the file from your local computer to upload.</li>
+                        <li> Fill out a short form to tag the uploaded video with relevant information.</li>
+                        <li> After clicking on "Upload" button, the Application will:
+                            <ul>
+                                <li> Save the video and metadata to AWS S3 server, which can be accessed online</li>
+                                <li> Convert video data to audio, transcrible, and analyze video, audio, and transcript
+                                    data
+                                </li>
+                            </ul>
+                    </ul>
+
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Visualize data -->
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">View Data Analaysis Results</h3>
+            </div>
+            <div class="panel-body">
+                <p> Teachers or other users can view different types of visualization on a certain class video.
+                    Visualizations
+                    are classified into three domains:
+                </p>
+                <ul>
+                    <li><span style="font-weight: bold;"> Emotional Support:</span></li>
+                    <li><span style="font-weight: bold;"> Classroom Organization:</span></li>
+                    <li><span style="font-weight: bold;"> Instructional Support:</span></li>
+                </ul>
+
+                <p> Instruction to view data analysis results: </p>
+                <ul>
+                    <li>Use the query to search for a cerain video via <a href="{{ url_for('query') }}">this link</a>.
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

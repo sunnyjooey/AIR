@@ -1,0 +1,17 @@
+log/*
+!log/logging.conf
+
+.git/
+
+*.orig
+.vscode/
+.pytest_cache/
+
+__pycache__
+*.swp
+_build
+venv
+media
+output
+run
+staticfiles

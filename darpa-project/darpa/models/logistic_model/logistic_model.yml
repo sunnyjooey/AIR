@@ -1,0 +1,240 @@
+description: |-
+  The logistic model predicts freight rate for a given origin and destination. The model also determines the optimal point of service (POS) from a list of possible POS by minimizing the total cost.
+  The input variables taken into consideration are:
+    - Distance from origin to destination,  source OSM maps
+    - Conflict data  source ACLED
+    - Origin country
+    - Destination country
+    - Digital elevation model
+    - Night time light, source NOAA
+    - Year
+    - Month
+    - Road surface condition
+    - Crude oil price
+
+input_files:
+  description: This is the input data used for model prediction.
+  metadata:
+  variables:
+    - name: distance_calc
+      description: Distance from the origin to destination in meters.
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+    - name: acled_mean
+      description: The conflict data was extracted from ACLED
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+    - name: year
+      description: The year freight rate year.
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+    - name: night_lights_max
+      description: NOAA NCEI product for nighttime luminosity in 2015.
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+    - name: origin_pop_mean
+      description: Mean population at point of orgin.
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+    - name: dest_pop_mean
+      description: Mean population at destination.
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+    - name: dem_std
+      description: Digital elevation model standard deviation.
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+    - name: Dcountry
+      description: Destination country.
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+    - name: Ocountry
+      description: Country of origin.
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+    - name: month
+      description: Freight rate month.
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+    - name: cargo_type
+      description: Type of cargo transported.
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+    - name: crude_oil_price
+      description: The price of crude oil
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+    - name: border_crossing
+      description: If the country of origin and destination are different
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+    - name: surface_condition_excellent
+      description: Percent of the road surface that is excellent
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+    - name: surface_condition_good
+      description: Percent of the road surface that is good
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+    - name: surface_condition_fair
+      description: Percent of the road surface that is fair
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+    - name: surface_condition_bad
+      description: Percent of the road surface that is bad
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+    - name: surface_condition_poor
+      description: Percent of the road surface that is poor
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+    - name: surface_condition_very_poor
+      description: Percent of the road surface that is very poor
+      uri: https://data.kimetrica.com/dataset/3a9a3e86-f967-4a55-bfa1-84a729e378f6/resource/9ee6ca82-17d7-4e60-8057-fefe4d4e7f75
+
+output_files:
+  - name: "output/final_targets/logistic_model/freight_rate{hash}.geojson"
+    description: |-
+        The geojson file is created by the task PredictFreightRate. The file has freight rate for a given origin and destination for each monthly time step per cargo type.
+    format: GeoJSON
+    metadata:
+    variables:
+        - name: rate USD/MT
+          description: Freight rate in US dollar per metric tonne.
+        - name: cargo_type
+          description: Type of cargo.
+        - name: month
+          description: temporal resolution month.
+        - name: year
+          description: temporal resolution Year.
+        - name: start
+  - name: "output/final_targets/logistic_model/optimal_pos{hash}.csv"
+    description: |-
+        The csv file is created by the task OPtimalPOSLocation. The csv file indicate the optimal POS from possible POS.
+    format: csv
+    metadata:
+    variables:
+        - name: selected
+          description: 1 if the point of service (POS) is selected.
+        - name: total_cost
+          description: Cost transporting cargo from the warehouse to POS plus the cost incurred to access the POS.
+        - name: uncovered_pop_percent
+          description: The percentage of the population that do have access to any POS for a given {max_walking_dist}   
+  - name: "output/final_targets/logistic_model/optimal_route{hash}.csv"
+    description: |-
+        The csv file is created by the task OPtimalPOSLocation. The csv file indicate the optimal route from population pint to POS.
+    format: csv
+    metadata:
+    variables:
+        - name: assigned
+          description: 1 if the route is optimal.
+        - name: total_cost
+          description: Cost transporting cargo from the warehouse to POS plus the cost incurred to access the POS.
+        - name: uncovered_pop_percent
+          description: The percentage of the population that do have access to any POS for a given {max_walking_dist}
+        - name: population
+          description: Number of beneficiaries at a given population point.
+        - name: x
+          description: Population point longitude.
+        - name: y
+          description: Poulation point latitude.
+        - name: lng
+          description: Point of service longitude
+        - name: lat
+          description: Point of service latitude
+parameters:
+  - name: admin_level
+    description: Select source data at admin level?
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - admin0
+        - admin1
+        - admin2
+
+      default: admin2
+  - name: country_level
+    description: Select source data at country level?
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - South Sudan
+        - Ethiopia
+      default: South Sudan
+  - name: time
+    description: This is the time window the end user is interested in.
+    metadata:
+      type: DateIntervalParameter
+      # note: The end date is non-inclusive!
+      default: 2017-01-01-2017-06-01
+  - name: geography
+    description: This is the AOI that is applied broadly throughout the models, and is used as a mask for general geography filtering.
+    metadata:
+      type: GeoParameter
+      default:
+        {
+          "coordinates":
+            [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+          "type": "Polygon",
+        }
+  - name: rainfall_scenario
+    description: The rainfall scenario based on historical monthly average of the precipitation values. High value is estimated by 2x mean, and low value is estimated by 0.25x mean.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - normal
+        - high
+        - low
+        - mean
+      default: normal
+  - name: rainfall_scenario_time
+    description: The selected time window in which rainfall_scenario is applied. This time interval must fall within time.
+    metadata:
+      type: DateIntervalParameter
+      default: 2017-05-01-2017-05-02
+  - name: rainfall_scenario_geography
+    description: The geography affected by the rainfall scenario parameter.
+    metadata:
+      type: GeoParameter
+      default:
+        {
+          "coordinates":
+            [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+          "type": "Polygon",
+        }
+  - name: max_walking_dist
+    description: The maximum distance beneficiaries can walk from population point to POS.
+    metadata:
+      type: FloatParameter
+      default: 5.0
+  - name: walking_speed
+    description: Beneficiaries walking speed.
+    metadata:
+      type: FloatParameter
+      default: 4.0
+      unit: km/hr
+  - name: daily_wage
+    description: Beneficiaries daily wage
+    metadata:
+      type: FloatParameter
+      default: 2.0
+      unit: US dollar per day (8 hours)
+  - name: time_limit
+    description: Time limit in solving the optimization problem (works if solvers that accept time limit are available).
+    metadata:
+      type: IntParameter
+      default: 180
+      unit: seconds
+  - name: quantity
+    description: The demand by the beneficiaries.
+    metadata:
+      type: FloatParameter
+      default: 0.01
+      unit: tonnes
+  - name: quantity_depend_on_pop
+    description: If the quanity depend of the population. If true the {quantity} is multiplied by the number of beneficiaries.
+    metadata:
+      type: BoolParameter
+      default: False
+  - name: limit_pos_num
+    description: If to limit the number of point of service
+    metadata:
+      type: BoolParameter
+      default: True
+  - name: pos_num
+    description: The number of point of service. Only used if {limit_pos_num} is True.
+    metadata:
+      type: IntParameter
+      default: 200
+  - name: use_population_percent
+    description: If to use percentage of the population data to determine the number of beneficiaries. If False number of beneficiaries equals to population data.
+    metadata:
+      type: BoolParameter
+      default: False
+  - name: population_percent
+    description: The percenatge of the population that are beneficiaries.
+    metadata:
+      type: FloatParameter
+      default: 0.1

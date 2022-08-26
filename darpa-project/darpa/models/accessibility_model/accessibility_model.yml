@@ -1,0 +1,205 @@
+id: AccessibilityModel
+name: Accessibility Model
+maintainer:
+  - name: Peter Mburu
+    email: peter.mburu@kimetrica.com
+author:
+  - name: Peter Mburu
+    email: peter.mburu@kimetrica.com
+version: 0.1.0
+description: >-
+  The accessibility model calculate the minimum time required to travel to the
+  nearest town via surface transport (air travel is not considered).
+  The input variables taken into consideration are:
+    - Rivers
+    - Roads
+    - Railway
+    - National Boundary
+    - Land cover
+    - Digital elevation model
+    - Impassable area from flood index model
+
+input_files:
+  - name: "globcover_l4_200901_200912_v2.3.tif"
+    description: |-
+      The land cover map is  derived by an automatic and regionally-tuned
+      classification of a time series of global MERIS FR mosaics for the year 2009.
+      The global land cover map counts 22 land cover classes defined with the
+      United Nations (UN) Land Cover Classification System (LCCS).
+      The 22 classes can be found in
+      https://data.kimetrica.com/dataset/081a3cca-c6a7-4453-b93c-30ec1c2aec37/resource/d5f7f3a5-75cd-4885-9bf9-fbd343cb9092/download/globcover2009_legend.xls.
+    metadata:
+      source: European Space Agency
+      uri: https://data.kimetrica.com/dataset/081a3cca-c6a7-4453-b93c-30ec1c2aec37/resource/9800c99c-57d0-48d6-81aa-5b9136a0dd4f/download/globcover_l4_200901_200912_v2.3.tif
+
+  - name: "east_africa_rivers.zip"
+    description: |-
+      The river network has been derived from OpenStreetMap.
+    metadata:
+      source: OpenStreetMap
+      uri: https://data.kimetrica.com/dataset/081a3cca-c6a7-4453-b93c-30ec1c2aec37/resource/f9fefe64-2cde-4dd6-b4e9-67f325011cd4/download/east_africa_rivers.zip
+
+  - name: "east_africa_road.zip"
+    description: |-
+      The road classes that are drivable.
+    metadata:
+      source: OpenStreetMap
+      uri: https://data.kimetrica.com/dataset/081a3cca-c6a7-4453-b93c-30ec1c2aec37/resource/c9f987d5-e80b-403c-a95a-6b4c66fcd5c0/download/east_africa_road.zip
+
+  - name: "east_africa_boundary_line.zip"
+    description: |-
+      The assmption is that it takes people one hour to cross national boundary.
+    metadata:
+      source: GADM
+      uri: https://data.kimetrica.com/dataset/081a3cca-c6a7-4453-b93c-30ec1c2aec37/resource/42c0e90d-be43-4601-8581-d46b98a3b170/download/east_africa_boundary_line.zip
+
+  - name: "dem_east_africa_1km_res.tif"
+    description: |-
+      A raster file for digital elevation model.
+    metadata:
+      source: Shuttle Radar Topography Mission Data
+      uri: https://data.kimetrica.com/dataset/f25f2152-e999-415f-956f-3a7c2eb2b723/resource/8cdbc26c-cf9f-4107-a405-d4e4e1777631/download/dem_east_africa_1km_res.tif
+
+  - name: "east_africa_railway.zip"
+    description: |-
+      A shapefile for railyway.
+    metadata:
+      source: OpenStreetMap
+      uri: https://data.kimetrica.com/dataset/081a3cca-c6a7-4453-b93c-30ec1c2aec37/resource/e28283bf-6c3f-4f83-a5c8-67616f3871d7/download/east_africa_railway.zip
+
+  - name: "models/hydrology_model/flood_index/tasks/ThresholdFloodIndex_{hash}/{month}.tif"
+    description: |-
+      A raster file which shows pixels that are flooed, 1=Yes and 0=No. The output is triggered by,
+      ThresholdFloodIndex Task
+    metadata:
+      source: Hydrology model
+      url:
+
+output_files:
+  - name: "models/accessibility_model/tasks/{hash}/{time}_travel_time.tif"
+    description: |-
+      A raster files whose value is the travel time to the nearest town,triggered by,
+      TraveTimeGeotiff Task.
+    format: geoTIFF
+    metadata:
+    variables:
+      - name: travel_time
+        description: The minutes required to reach the nearest town.
+  - name: "average_travel_time_{self.country_level}_{self.rainfall_scenario}_rainfall_{hash}.geojson"
+    description: |-
+      Geojson file from the task TravelTimeGeoJSON. The task convert the output of the task TraveTimeGeotiff to geojson format across the time period specified by the time parameter defined in GlobalParameter.
+    format: GeoJSON
+    metadata:
+    variables:
+        - name: travel_time
+          description: The minutes required to reach the nearest town.
+        - name: admin1
+          description: adminstrative level 1 of coverage.
+        - name: admin2
+          description: adminstrative level 2 of coverage.
+        - name: start
+          description: start date time string for that month (useful for interactive map).
+        - name: end
+          description: end date time string for that month (useful for interactive map).
+        - name: geometry
+          description: polygon coordinates (WGS84).
+
+parameters:
+  - name: admin_level
+    description: Select source data at admin level.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - admin0
+        - admin1
+        - admin2
+
+      default: admin2
+  - name: country_level
+    description: Select source data at country level.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - South Sudan
+        - Ethiopia
+      default: South Sudan
+  - time:
+    description: This is the time window the end user is interested in.
+    metadata:
+      type: DateIntervalParameter
+      # note: The end date is non-inclusive!
+      default: 2017-01-01-2017-06-01
+  - geography:
+    description: This is the AOI that is applied broadly throughout the models, and is used as a mask for general geography filtering.
+    metadata:
+      type: GeoParameter
+      default:
+        {
+          "coordinates":
+            [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+          "type": "Polygon",
+        }
+  - rainfall_scenario:
+    description: The rainfall scenario based on historical monthly average of the precipitation values. High value is estimated by 2x mean, and low value is estimated by 0.25x mean.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - normal
+        - high
+        - low
+        - mean
+      default: normal
+  - rainfall_scenario_time:
+    description: The selected time window in which rainfall_scenario is applied. This time interval must fall within time.
+    metadata:
+      type: DateIntervalParameter
+      default: 2017-05-01-2017-05-02
+  - rainfall_scenario_geography:
+    description: The geography affected by the rainfall scenario parameter.
+    metadata:
+      type: GeoParameter
+      default:
+        {
+          "coordinates":
+            [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+          "type": "Polygon",
+        }
+  - flood_index_threshold:
+    description: The European runoff index threshold of identifying flooded pixel.
+    metadata:
+      type: FloatParameter
+      default: 1.0
+  - soil_moisture_threshold:
+    description: The minimum soil moisture content for pixel to identified as flooded.
+    metadata:
+      type: FloatParameter
+      default: 0.42
+  - name: return_period_threshold
+    description: >-
+      The return period used to estimate flood extent.
+    metadata:
+      type: IntParameter
+    default: 5
+  - name: temperature_scenario
+    description: >-
+      Temperature perturbation value the unit is in Kelvin.
+    metadata:
+      type: FloatParameter
+    default: 0
+  - name: temperature_scenario_time
+    description: >-
+      The selected time window in which a temperature scenario is applied.
+    metadata:
+      type: TimeParameter
+    default: 2017-05-01-2017-05-02
+  - name: temperature_scenario_geography
+    description: >-
+      The geographical area affected by the temperature scenario parameter.
+    metadata:
+      type: GeoParameter
+    default: >-
+      {
+        "coordinates":
+          [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+        "type": "Polygon",
+      }

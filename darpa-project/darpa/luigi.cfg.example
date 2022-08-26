@@ -1,0 +1,83 @@
+[core]
+default-scheduler-url=${LUIGI_DEFAULT_SCHEDULER_URL}
+logging_conf_file=${LUIGI_LOGGING_CONF_FILE}
+cache_dir=${LUIGI_CACHE_DIR}
+
+[scheduler]
+record_task_history=True
+pidfile=/usr/src/app/run/luigi.pid
+state_path=/usr/src/app/run/luigi-state.pickle
+retry_delay=15
+
+[task_history]
+db_connection=${DATABASE_URL}
+
+[worker]
+keep_alive=True
+ping_interval=5
+
+[retcode]
+already_running=10
+missing_data=20
+not_run=25
+task_failed=30
+scheduling_error=35
+unhandled_exception=40
+
+[ckan]
+username=${LUIGI_CKAN_USERNAME}
+password=${LUIGI_CKAN_PASSWORD}
+address=${LUIGI_CKAN_ADDRESS}
+; update CKAN metadata every x seconds
+check_for_updates_every=300
+
+[paths]
+output_path=${LUIGI_OUTPUT_PATH}
+
+[documentation]
+documentation_base_url=${DOCUMENTATION_BASE_URL}
+
+[resources]
+cpu_cores=10
+
+[kiluigi.targets.delegating.IntermediateTarget]
+backend_class=${KILUIGI_INTERMEDIATETARGET_BACKEND_CLASS}
+root_path=${KILUIGI_INTERMEDIATETARGET_ROOT_PATH}
+
+[kiluigi.targets.delegating.FinalTarget]
+backend_class=${KILUIGI_FINALTARGET_BACKEND_CLASS}
+root_path=${KILUIGI_FINALTARGET_ROOT_PATH}
+
+[earthdata]
+username=${LUIGI_EARTHDATA_USERNAME}
+password=${LUIGI_EARTHDATA_PASSWORD}
+
+[cdsapi]
+api_key=${LUIGI_CDS_API_KEY}
+uid=${LUIGI_CDS_API_UID}
+
+[map]
+api_key=${LUIGI_MAP_API_KEY}
+
+[kdw]
+username=${LUIGI_KDW_USERNAME}
+password=${LUIGI_KDW_PASSWORD}
+
+[projection]
+wkp= EPSG:4326
+srs= GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433],AUTHORITY["EPSG","4326"]]
+originx = 24.150733709000065
+originy = 12.23635188000003
+pixel_width = 0.008334173612994344
+pixel_height = -0.008331170202664108
+ncols = 1416
+nrows = 1051
+
+[CalculateTotalRations]
+duration: 30
+food_basket: {"maize": {"calories_per_100g": 365,
+                        "contrib": 0.65},
+              "beans": {"calories_per_100g": 337,
+                        "contrib": 0.15},
+              "vegetable_oil": {"calories_per_100g": 862,
+                                "contrib": 0.20}}

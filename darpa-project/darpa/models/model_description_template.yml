@@ -1,0 +1,50 @@
+# the |- will treat the following lines as a single unit of text, and will not interpret special
+# characters like ":" or "-".
+description: |-
+  The ... model predicts ...
+  The input sources taken into consideration are: 
+    - 
+    - 
+
+input_files:
+  # if we use a number of files, e.g. from CHIRPS, maybe we could use wild-cards or just
+  # use a general name like "CHIRPS rainfall data files"
+  - name: "model_input_1.csv"
+    description:
+    metadata:
+      source: CHIRPS
+      url:
+
+output_files:
+  # the filename will contain a hash specific to a set of input parameter values
+  - name: "model_output_{hash}.csv"
+    description:
+    metadata:
+      # just an idea, but maybe we should include how the final file is stored, e.g. filesystem or S3 or CKAN
+      # for S3 or CKAN either the name should be a URL, or we should have a URL key either under output_files or metadata
+      storage: filesystem
+      key_variables:
+        -
+        -
+
+input_variables:
+  - name:
+    description:
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - Choice_1
+        - Choice_2
+      default: Choice_1
+  - Time:
+    description:
+    metadata:
+      type: DateIntervalParameter
+      # note: The end date is non-inclusive!
+      default: 2017-05-01-2017-05-02
+
+output_variables:
+  - name:
+    description:
+    metadata:
+      unit:

@@ -1,0 +1,161 @@
+id: HouseholdEconomicModel
+name: Household Economic Model
+maintainer:
+  - name: Ian Carroll
+    email: ian.carroll@kimetrica.com
+author:
+  - name: Ian Carroll
+    email: ian.carroll@kimetrica.com
+  - name: Alison Campion
+  - name: Alexander Gotlieb
+version: 0.1.0
+description: >-
+  The Household Economic Model predicts consumption expenditure per person
+  per day. Model training for South Sudan depends on the World Bank's High
+  Frequency Surveys, which were conducted in four waves over 2015-2017 and
+  aggregated to clusters of roughly 10-30 households around a jittered
+  centroid. Model training for Ethiopia depends on LSMS surveys by the
+  Central Statistical Survey (CSA) of Ethiopia conducted in three waves over
+  2011-2016. Consumption expenditure is reported in USD spent by one adult
+  equivalent (normalized by average caloric demand by age and gender) per day.
+  The input files are a combination of outputs from other models within this
+  project (Population Model, Accessibility Model) and publicly available
+  datasets (night time light, landcover classification). The model output
+  is available as TIFF formatted raster files and JSON.
+inputs:
+  - name: accessibility
+    description: >-
+      A raster files whose value is the travel time to the nearest town,
+      triggered by, TravelTimeToTowns task.
+    format: GeoTIFF
+    variables:
+      - name: travel_time
+        description: >-
+          The minutes required to reach the nearest town.
+        standard_variables:
+        metadata:
+          unit: minutes
+    example:
+      uri: "models/accessibility_model/tasks/{hash}/{time}_travel_time.tif"
+  - name: population
+    description: >-
+      Hi-resolution raster file for a given year, created by pipeline
+      triggered by HiResPopRasterMasked Task.
+    format: GeoTIFF
+    variables:
+      - name: population
+        description: >-
+          Pixel value corresponds to population estimate at 1km^2 grid cell.
+        standard_variables:
+        metadata:
+          unit: headcount
+    example:
+      uri: "models/population_model/tasks/{hash}/{yr}_{country_level}_hires_masked_pop.tiff"
+  - name: landcover
+    description: >-
+      Discontinued global landcover dataset (2015) from USGS.
+    format: GeoTIFF
+    variables:
+      - name: landcover
+        description: >-
+          Classification of landcover into discrete types such as
+          urban, forest, farmland, etc.
+        standard_variables:
+    example:
+      uri: "https://data.kimetrica.com/dataset/raster-data/resource/5712155e-5321-4f01-9eab-0de727af53be"
+    source:
+  - name: night_lights
+    description: >-
+      NOAA NCEI product for nighttime luminosity in 2015.
+    format: GeoTIFF
+    variables:
+      - name: night_lights
+        description: >-
+          Average radiance composite images using nighttime data from the
+          Visible Infrared Imaging Radiometer Suite (VIIRS) Day/Night Band (DNB).
+        metadata:
+          unit: nanoWatts/cm2/sr
+    example:
+      uri: "https://data.ngdc.noaa.gov/instruments/remote-sensing/passive/spectrometers-radiometers/imaging/viirs/dnb_composites/v10/2015/"
+outputs:
+  - name: "output/final/consumption_expenditure.tiff"
+    description: >-
+      Raster of variables related to poverty triggered by
+      OutputEconomicModelResults Task
+    format: GeoTIFF
+    variables:
+      - name: consumption_expenditure
+        description: >-
+          Average daily household spending on food items for one adult
+          equivalent.
+        standard_variables:
+        metadata:
+          unit: USD
+parameters:
+  - name: admin_level
+    description: >-
+      Set the spatial resolution of non-gridded outputs by administrative
+      boundaries.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - admin0
+        - admin1
+        - admin2
+    default: admin2
+  - name: country_level
+    description: >-
+      Set the spatial extent of outputs to a country.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - South Sudan
+        - Ethiopia
+    default: South Sudan
+  - name: time
+    description: >-
+      The time window, or temporal extent, of outputs as a date range
+      (excluding the end date).
+    metadata:
+      type: TimeParameter
+    default: 2017-01-01-2017-06-01
+  - name: geography
+    description: >-
+      The area of interest, or spatial extent of outputs, as a GeoJSON object.
+    metadata:
+      type: GeoParameter
+    default: >-
+      {
+        "coordinates":
+          [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+        "type": "Polygon",
+      }
+  - name: rainfall_scenario
+    description: >-
+      Use current rainfall data or use a scenario based on deviations
+      from monthly averages.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - "normal"
+        - "mean"
+        - "low"
+        - "high"
+    default: "normal"
+  - name: rainfall_scenario_time
+    description: >-
+      The selected time window in which a rainfall scenario is applied.
+    metadata:
+      type: TimeParameter
+    default: 2017-05-01-2017-05-02
+  - name: rainfall_scenario_geography
+    description: >-
+      The geographical area affected by the rainfall scenario parameter.
+    metadata:
+      type: GeoParameter
+    default: >-
+      {
+        "coordinates":
+          [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+        "type": "Polygon",
+      }

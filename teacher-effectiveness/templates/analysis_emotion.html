@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="wrapper">
+
+    <!-- Sidebar -->
+    <div class="sidebar col-sm-2">
+      <ul>
+          <li><a class="active" href="{{ url_for('analysis_emotion',file_key = file_key) }}">Emotional Support</a></li><br/>
+          <li><a href="{{ url_for('analysis_organization', file_key = file_key) }}">Classroom Organization</a></li><br/>
+          <li><a href="{{ url_for('analysis_instruction', file_key = file_key) }}">Instructional Support</a></li><br/>
+      </ul>
+    </div>
+
+    <!-- Page Content -->
+    <div class="container side-content col-sm-10">
+        <div class = "row" style="font-size:30px; text-align:center">
+            {{ class_info.Teacher }}'s Grade {{ class_info.Grade }} {{ class_info.Subject }} Class on {{ class_info.Date }}
+        </div>
+        <div class = "row">
+            <!-- sentiment line graph -->
+            <div class="col-md-6">
+                <div id="chart-sentiment"> </div>
+            </div>
+
+            <!-- emotion heat map -->
+            <div class="col-md-6">
+                <div id="chart-emotion" class="chart"> </div>
+            </div>
+
+        </div>
+        <br>
+        <div class = "row">
+            <!-- text bos for number of occurrences -->
+            <div class="col-md-6">
+                <div class="chart-title">
+                Different Types of Occurrences in Classroom
+                </div>
+                <br>
+                <table id="occurrence-table" align="center">
+                    <tbody>
+                    <tr>
+                        <th colspan="2"> Type of Occurrence </th>
+                        <th> Frequency (number of times) </th>
+                    </tr>
+                    <tr>
+                        <td rowspan="2"> Positive </td>
+                        <td class="item-title"> Laughing </td>
+                        <td> {{ occurrence_data.laugh }}</td>
+                    </tr>
+                    <tr>
+                        <td class="item-title"> Applause </td>
+                        <td> {{ occurrence_data.applause }} </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="2"> Negative </td>
+                        <td class="item-title"> Use of Insulting Language </td>
+                        <td> {{ occurrence_data.insult }} </td>
+                    </tr>
+                    <tr>
+                        <td class="item-title"> Teacher Yelling </td>
+                        <td> {{ occurrence_data.yelling }} </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- stack chart -->
+            <div class="col-md-6">
+                <div id = "chart-occurrence" class="chart"> </div>
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+<!-- D3.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<!-- Plotly.js -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<script type="text/javascript">
+  var graph = {{graphJSON_sentiment | safe}};
+  Plotly.plot('chart-sentiment',graph.data, graph.layout);
+  var graph2 = {{graphJSON_emotion | safe}};
+  Plotly.plot('chart-emotion',graph2.data, graph2.layout);
+  var graph3 = {{graphJSON_occurrence | safe}};
+  Plotly.plot('chart-occurrence',graph3.data, graph3.layout);
+
+</script>
+{% endblock %}

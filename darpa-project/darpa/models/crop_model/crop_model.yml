@@ -1,0 +1,196 @@
+description: |-
+  The model uses Decision Support System for Agrotechnology Transfer (DSSAT) to estimate
+  crop production.
+  The crop models require following inputs:
+    - Daily weather data
+    - Soil surface and profile information
+    - Detailed crop management
+    - Crop genetic information
+
+input_files:
+  - name: DSSAT weather file
+    description: Daily weather data required to run DSSAT
+    variables:
+      - name: INSI
+        description: Weather station identifier to link to site information
+        uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+      - name: LAT
+        description: Latitude of the station
+        units: Decimal degrees
+        uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+      - name: LONG
+        description: Longitude of the station-
+        units: Decimal degrees
+        uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+      - name: ELEV
+        description: Station altitude
+        units: meters (m)
+        uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+      - name: TAV
+        description: Temperature average for whole year
+        units: °C
+        uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+      - name: AMP
+        description: Amplitude of annual air temperature
+        units: °C
+        uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+      - name: REFHT
+        description: Reference height for the weather mesurements
+        units: meters (m)
+        uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+      - name: WNDHT
+        description: Reference height for wind speed mesurements
+        units: meters (m)
+        uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+      - name: SRAD
+        description: Daily solar radiation
+        units: MJ/m2/day
+        uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+      - name: TMAX
+        description: Maximum daily air temperature
+        units: °C
+        uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+      - name: TMIN
+        description: Minimum daily air temperature
+        units: °C
+        uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+      - name: RAIN
+        description: Daily rainfall (including soil moisture in snow)
+        units: mm/day
+        uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+      - name: RHUM
+        description: Daily relative humidity
+        units: percent (%)
+        uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+      - name: WIND
+        description: Daily wind speed
+        units: km/day
+        uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+      - name: TDEW
+        description: Daily dew point temperature
+        units: °C
+        uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+  - name: ET.SOL
+    description: |-
+      The soil surface and profile information which include:
+        - upper and lower horizon depths (cm),
+        - percentage sand, silt, and clay content,
+        - 1/3 bar bulk density,
+        - organic carbon,
+        - pH in water,
+        - aluminum saturation, and
+        - root abundance information.
+    uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz        
+  - name: ETHI8401.SNX
+    description: DSSAT seasonal simulation control file for irrigated maize
+    units: unit-less
+    uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+  - name: ETHI8402.SNX
+    description: DSSAT seasonal simulation control for rainfed maize
+    units: unit-less
+    uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+  - name: spam2010v1r0_eth_harvested-area_maiz_i.tif
+    description: Harvested area for irrigated maize. High nitrogen inputs is assumed.
+    units: ha
+    uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+  - name: spam2010v1r0_eth_harvested-area_maiz_h.tif
+    description: Harvested area for rainfed maize. High nitrogen inputs is assumed.
+    units: ha
+    uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+  - name: spam2010v1r0_eth_harvested-area_maiz_l.tif
+    description: Harvested area for rainfe maize. Low nitrogen inputs is assumed.
+    units: ha
+    uri: https://world-modelers.s3.amazonaws.com/data/ethdata.tar.xz
+  - name: spam2010v1r0_eth_harvested-area_maiz_s.tif
+    description: Harvested area for rainfed maize. No nitrogen input is assumed.
+
+output_files:
+  - name: "harvested_maize_irrig_{hash}.tif"
+    description: |-
+      A raster file who number of band is {nyers}. The raster values are amount of
+      irriaged maize harvested. High nitrogen is assumed.
+      The output is trigered by file created by HarvestedYieldGeotiffs Task.
+    metadata:
+      units: kg
+  - name: "harvested_maize_rf_highN_{hash}.tif"
+    description: |-
+      A raster file who number of band is {nyers}. The raster values are amount of
+      rainfed maize harvested. High nitrogen is assumed.
+      The output is trigered by file created by HarvestedYieldGeotiffs Task.
+    metadata:
+      units: kg
+  - name: "harvested_maize_rf_lowN_{hash}.tif"
+    description: |-
+      A raster file who number of band is {nyers}. The raster values are amount of
+      rainfed maize harvested. Low nitrogen is assumed.
+      The output is trigered by file created by HarvestedYieldGeotiffs Task.
+    metadata:
+      units: kg
+  - name: "harvested_maize_rf_0N_{hash}.tif"
+    description: |-
+      A raster file who number of band is {nyers}. The raster values are amount of
+      rainfed maize harvested. No nitrogen is assumed.
+      The output is trigered by file created by HarvestedYieldGeotiffs Task.
+    metadata:
+      units: kg
+
+parameters:
+  - name: admin_level
+    description: Select source data at admin level.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - admin0
+        - admin1
+        - admin2
+
+      default: admin2
+  - name: country_level
+    description: Select source data at country level. # Crop_model only work in ETH
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - South Sudan
+        - Ethiopia
+      default: Ethiopia
+  - Time:
+    description: This is the time window the end user is interested in.
+    metadata:
+      type: DateIntervalParameter
+      # note: The end date is non-inclusive!
+      default: 2017-01-01-2017-06-01
+  - geography:
+    description: This is the AOI that is applied broadly throughout the models, and is used as a mask for general geography filtering.
+    metadata:
+      type: GeoParameter
+      default:
+        {
+          "coordinates":
+            [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+          "type": "Polygon",
+        }
+  - PercentOfNormalRainfall:
+    description: The percentage of rainfall scenario. 0 is no rainfall, 1 is the same as the recorded amount, 2 is 2 times the recorded amount.
+    metadata:
+      type: FloatParameter
+      default: 1.5
+  - PercentOfNormalRainfall_Time:
+    description: The selected time window in which PercentOfNormalRainfall is applied.
+    metadata:
+      type: DateIntervalParameter
+      default: 2017-05-01-2017-05-02
+  - PercentOfNormalRainfall_Geography:
+    description: The geography affected by the rainfall scenario parameter.
+    metadata:
+      type: GeoParameter
+      default:
+        {
+          "coordinates":
+            [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+          "type": "Polygon",
+        }
+  - sample:
+    description: The sample size to be used to run DSSAT
+    metadata:
+      type: IntParameter
+      default: -1 # All the data is used

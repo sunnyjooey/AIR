@@ -1,0 +1,5 @@
+THIS IS THE DATA USED FOR THE ACTUAL PRODUCT:
+take one module out: cblof, model on all data -> filter by region (same as "first")
+overall score: cblof, model on all data -> filter by region
+neighbors: filter by region -> knn for 20 nearest neighbors 
+decent results

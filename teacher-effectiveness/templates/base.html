@@ -1,0 +1,43 @@
+<!doctype html>
+<head>
+    <title>{% block title %}{% endblock %} - Teacher Effectiveness</title>
+    <!-- You can download css and js from https://github.com/mistic100/jQCloud/tree/master/dist -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/jqcloud.min.css') }}">
+    <!-- we included some bootstrap css and js to make our page look nice -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-select.min.css') }}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jqcloud.min.js') }}"></script>
+    <!-- bootstrap js-->
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap-select.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+<body>
+<nav class="my-nav">
+    <h1>Teacher Effectiveness</h1>
+    <ul>
+        {% if g.user %}
+            <li><span>{{ g.user['username'] }}</span>
+            <li><a href="{{ url_for('logout') }}">Log Out</a>
+            <li><a href="{{ url_for('main') }}">Home</a>
+                {% else %}
+                {% if config.env != 'public' %}
+                    <li><a href="{{ url_for('register') }}">Register</a>
+                {% endif %}
+            <li><a href="{{ url_for('login') }}">Log In</a>
+        {% endif %}
+    </ul>
+</nav>
+<section class="content">
+    <header>
+        {% block header %}{% endblock %}
+    </header>
+    {% for message in get_flashed_messages() %}
+        <div class="flash">{{ message }}</div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+</section>
+</body>
+{% block footer %}{% endblock %}

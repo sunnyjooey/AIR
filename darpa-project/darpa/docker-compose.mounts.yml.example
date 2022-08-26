@@ -1,0 +1,20 @@
+version: "2.4"
+
+services:
+  # extending the kimetrica-darpa-models service definition to add
+  # additional mounts for directories containing jupyter notebooks or
+  # Python source code packages
+  kimetrica-darpa-models:
+    image: kimetrica-darpa-models
+    environment:
+      # also adding folder for python source code packages to PYTHONPATH
+      # so we can use and develop them
+      - PYTHONPATH=/usr/src/app:/usr/src/vendor
+    volumes:
+      #- ${PWD}/../interventions/interventions:/usr/src/vendor/interventions
+      - ${PWD}/../notebooks:/usr/src/app/notebooks
+      # using a volume for output means the files are preserved, but are not
+      # available in the repo folder - do we want that?
+      # - output:/usr/src/app/output
+# volumes:
+#   output:

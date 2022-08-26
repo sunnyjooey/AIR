@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}{{ error.code }} - {{ error.name }}{% endblock %}
+
+{% block content %}
+    <h2>Something went wrong</h2>
+    <h3>{{ error.code }} - {{ error.name }}</h3>
+    <h4>{{ error.description }}</h4>
+{% endblock %}
+{% block footer %}
+    <h4>Try again later or request for support</h4>
+{% endblock %}

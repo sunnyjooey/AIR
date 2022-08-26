@@ -1,0 +1,139 @@
+description: |-
+  The market price model uses predicts the price of agricultural commodities using Fixed Effects regression method. Fixed Effect regression model is a linear regression model when the observations vary over time and regions.
+  The commodities used in the model are beans, groundnuts, maize, meat, milk, okra, rice, sorghum, sugar, vegetable oil, and wheat for South Sudan, fruit, and teff for Ethiopia.
+  The model uses rainfall, price of fuel, historical price data, number of fatalities and crop production as explatory variable to predict prices.
+  Commodity prices, price of petrol and crop production data are from CLiMIS South Sudan.
+  Rainfall is from Climate Hazards Group InfraRed Precipitation with Station data (CHIRPS) and  the number of fatalities are from ACLED.
+  The input variables are:
+    - price of petrol and diesel
+    - total rainfall in the previous month, (CHIRPS)
+    - crop production net weight in the previous year,
+    - number of fatalities from violent conflict in the previous month
+    - commodity price in the previous month.
+
+input_files:
+  description: Input(explantory) variables that make up the input dataframe.
+  metadata:
+  variables:
+    - name: p_petrol (SS)
+      description: price of petrol from CLiMIS (.csv)
+      uri: https://data.kimetrica.com/dataset/6e8ce492-be55-4d94-9716-5f96183b748f/resource/1854bbfc-003a-4e56-9cc0-206962ceed75
+    - name: p_diesel (ETH)
+      description: price of diesel from Central Statistical Agency of Ethiopia (.csv)
+      uri: https://data.kimetrica.com/dataset/ddf2f709-c5a7-40c0-88c6-04df9c26bca3/resource/bdaa9425-0b7c-43e9-b4b7-e7564971db1f
+    - name: rainfall (CHIRPS)
+      description: Total rainfall in the previous month were obtained from Climate Hazards Group at UC Santa Barbara (.tif format)
+      uri: ftp://ftp.chg.ucsb.edu/pub/org/chg/products/CHIRPS-2.0/africa_monthly/tifs/
+    - name: crop_prod (SS)
+      description: Yearly cereal crop production (Net Cereal production (Tonnes)) for South Sudan on the county level (.csv format).
+      uri: https://data.kimetrica.com/dataset/ca5e2bdb-b65d-47a6-83b9-025996108b39/resource/aca71453-727d-4577-bb0d-d2a63d0371d8
+    - name: crop_prod (ETH)
+      description: agricultural commodity production
+      uri: https://data.kimetrica.com/dataset/9ffe6d58-f60f-4ece-ac4c-79ad9c52b144/resource/05034af2-1894-49c3-8bfe-7b10e1406079
+    - name: p_food_{commodity name}
+      description: Monthly commodity price at county level from from the CLiMIS database (. csv format for each commodity. All products combined in one excel file)
+      uri: https://data.kimetrica.com/dataset/023b0560-4058-49a4-8317-7b3535dbd4e0/resource/25abce10-9bd2-4cca-bfe5-e538829fbe66
+    - name: fatalities
+      description: Number of fatalities from violent conflict in the previous month. (.xlsx)
+      uri: https://www.acleddata.com/curated-data-files/
+
+
+output_files:
+    - name: "{hash}/{time}_market_price.tiff"
+      description: |-
+        The tiff file is created by pipeline triggered by PricesGeotiff task. Each raster file has 6 bands corresponding to the predicted price of the commodity group.
+        -9999 is assigned to the pixel where the price is not availale or if the pixel falls outside of the geographical mask.
+
+      format: geotiff
+      metadata:
+        band_1: meat
+        band_2: Pulses and vegetables
+        band_3: Bread and Cereals
+        band_4: Milk, cheese and eggs
+        band_5: Sugar, jam, honey, chocolate and candy
+        band_6: Oils and fats
+        variables:
+          - name:
+            description: pixel value corresponds to predicted price of the given commodity group.
+
+    - name: "group_{commodity_groups}.geojson"
+      description: |-
+        The geojson file is triggerd by PriceToGeoJSON creates geojson of monthly commodity prices using time interval specified by user in GlobalParameter.time.
+      format: geoJSON
+      metadata:
+      variables:
+        - name: price
+          description: price per kg (USD)
+        - name: admin1
+          description: adminstrative level 1 of coverage.
+        - name: admin2
+          description: adminstrative level 2 of coverage.
+        - name: Month
+          description: temporal resolution month.
+        - name: Year
+          description: temporal resolution Year.
+        - name: start
+          description: start date time string for that month (useful for interactive map).
+        - name: end
+          description: end date time string for that month (useful for interactive map).
+        - name: geometry
+          description: polygon coordinates (WGS84)
+
+parameters:
+  - name: admin_level
+    description: Select source data at admin level?
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - admin1
+        - admin2
+
+      default: admin2
+  - name: country_level
+    description: Select source data at country level
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - South Sudan
+        - Ethiopia
+      default: South Sudan
+  - time:
+    description: This is the time window the end user is interested in.
+    metadata:
+      type: TimeParameter
+      default: 2017-01-01-2017-06-01
+  - geography:
+      description: This is the AOI that is applied broadly throughout the models, and is used as a mask for general geography filtering.
+      metadata:
+        type: GeoParameter
+        default:
+          {
+            "coordinates":
+              [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+            "type": "Polygon",
+          }
+  - rainfall_scenario:
+    description: Not yet available for this model.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - normal
+        - high
+        - low
+        - mean
+      default: normal
+  - rainfall_scenario_time:
+    description: Not yet available for this model.
+    metadata:
+      type: DateIntervalParameter
+      default: 2017-05-01-2017-05-02
+  - rainfall_scenario_geography:
+    description: Not yet available for this model.
+    metadata:
+      type: GeoParameter
+      default:
+        {
+          "coordinates":
+            [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+          "type": "Polygon",
+        }

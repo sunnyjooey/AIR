@@ -1,0 +1,2 @@
+INSERT INTO login.login (username, password, teacher_id, login_attempts) VALUES ('AIR', 'pbkdf2:sha256:150000$QbOmcFuP$8faedb8d1d69db059c2479342e391edd33833bc1686632f9ced1bc2a9ee6949e', 3, 0);
+INSERT INTO login.login (username, password, teacher_id, login_attempts) VALUES ('air_team', 'pbkdf2:sha256:150000$54PG8iNM$59e3e46e25161bb3b8a740c5c485e8cab52e1e299019899aef8f14fef6f1f022', 6, 0);

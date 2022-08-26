@@ -1,0 +1,4 @@
+Phrase	SoundsLike	IPA	DisplayAs
+guide	gide		guide
+train	trane		train
+kennel	kenil		kennel

@@ -1,0 +1,122 @@
+description: |-
+  The soil moisture model predict surface soil moisture and then threshold soil moisture
+  to determine impassable areas.
+  The input variables taken into consideration are:
+    - Land forms
+    - Topographic wetness index
+    - Soil texture
+    - Rainfall
+
+input_files:
+  - name: CHIRPS daily rainfall data
+    description: |-
+      The rainfall data is for Africa and has a spatial resolution of about 0.05 degree.
+    metadata:
+      unit: mm/day
+      source: CHIRPS
+      url: ftp://ftp.chg.ucsb.edu/pub/org/chg/products/CHIRPS-2.0/africa_daily/tifs/p05/
+
+  - name: Land forms
+    description: |-
+      The ALOS Landform dataset provides landform classes created by combining the
+      Continuous Heat-Insolation Load Index (CHILI) and the multi-scale
+      Topographic Position Index (mTPI) datasets. It is based on the
+      USGS's 10m NED DEM (available in EE as USGS/NED).
+    Metadata:
+      unit: The dataset has 15 classes
+      source: ALOS Landform
+      url: https://developers.google.com/earth-engine/datasets/catalog/CSP_ERGo_1_0_US_landforms
+
+  - name: Topographic wetness index
+    description: |-
+      Created using slope and catchment area.
+    metadata:
+      unit:
+      source:
+      url:
+
+  - name: Soil texture
+    description: |-
+      Soil texture has a 250 meter spatial resolution
+    metadata:
+      unit: g/100g
+      source: ISRIC
+      url: https://www.isric.org/projects/soil-property-maps-africa-250-m-resolution
+
+output_files:
+
+  - name: "soil_moisture_{hash}.tif"
+    description: Predicted soil surface moisture. The output is triggered by RainfallSimulation Task.
+    metadata:
+      storage: filesystem
+  - name: "inundation_{hash}.tif"
+    description: Raster file indicating impassable areas. The output is triggered by RainfallSimulation Task.
+    metadata:
+      storage: filesystem
+
+input_variables:
+  - name: ADMIN_LEVEL_CHOICES
+    description: Select source data at admin level.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - ADMIN_0
+        - ADMIN_1
+        - ADMIN_2
+        - ADMIN_3
+        - ADMIN_4
+      default: ADMIN_2
+  - name: COUNTRY_CHOICES
+    description: Select source data at country level.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - SS
+        - ETH # soil moisture model currently run in South Sudan only
+      default: SS
+  - Time:
+    description: This is the time window the end user is interested in.
+    metadata:
+      type: DateIntervalParameter
+      # note: The end date is non-inclusive!
+      default: 2017-01-01-2017-06-01
+  - geography:
+    description: This is the AOI that is applied broadly throughout the models, and is used as a mask for general geography filtering.
+    metadata:
+      type: GeoParameter
+      default:
+        {
+          "coordinates":
+            [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+          "type": "Polygon",
+        }
+  - PercentOfNormalRainfall:
+    description: The percentage of rainfall scenario. 0 is no rainfall, 1 is the same as the recorded amount, 2 is 2 times the recorded amount.
+    metadata:
+      type: FloatParameter
+      default: 2.0
+  - PercentOfNormalRainfall_Time:
+    description: The selected time window in which PercentOfNormalRainfall is applied.
+    metadata:
+      type: DateIntervalParameter
+      default: 2017-05-01-2017-05-02
+  - PercentOfNormalRainfall_Geography:
+    description: The geography affected by the rainfall scenario parameter.
+    metadata:
+      type: GeoParameter
+      default:
+        {
+          "coordinates":
+            [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+          "type": "Polygon",
+        }
+
+output_variables:
+  - name: Soil moisture
+    description: surface soil moisture (0-10 cm)
+    metadata:
+      storage: filesystem
+  - name: inundation
+    description: Areas that are impassable
+    metadata:
+      storage: filesystem

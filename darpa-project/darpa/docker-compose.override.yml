@@ -1,0 +1,11 @@
+version: "2.4"
+
+services:
+  # extending the kimetrica-darpa-models service definition to add a mount
+  # for local development, as well as exposing jupyter server on port 8888
+  kimetrica-darpa-models:
+    image: kimetrica-darpa-models
+    ports:
+      - "8888:8888"
+    volumes:
+      - ${PWD}:/usr/src/app

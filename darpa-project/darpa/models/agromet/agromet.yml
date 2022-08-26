@@ -1,0 +1,304 @@
+id: Agromet
+name: Agromet
+maintainer:
+  - name: Peter Mburu
+    email: peter.mburu@kimetrica.com
+author:
+  - name: Peter Mburu
+    email: peter.mburu@kimetrica.com
+version: 0.1.0
+description: >-
+ Agromet calculate meteorological, hydrological, and agricultural drought indices.
+ The indices are: Standardized Precipitation Index (SPI), 
+ Standardized Precipitation-Evapotranspiration Index (SPEI), 
+ Self-calibrated Palmer Drought Severity Index (scPDSI),
+ Palmer Drought Severity Index (PDSI), Palmer Hydrological Drought Index (PHDI),
+ Modified Palmer Drought Severity Index (PMDI) and Palmer moisture anomaly index (Z-index).
+inputs:
+  - name: rainfall
+    description: >-
+      Monthly rainfall from Climate Hazards Group InfraRed Precipitation with Station data (CHIRPS),
+      scrapped by, ScrapePrecipitationData task.
+    format: GeoTIFF
+    variables:
+      - name: rainfall
+        description: >-
+          Month rainfall in milimeters.
+        standard_variables:
+        metadata:
+          unit: milimeters
+    example:
+      uri: "ftp://ftp.chg.ucsb.edu/pub/org/chg/products/CHIRPS-2.0/africa_monthly/tifs/"
+  - name: potential evapotranspiration
+    description: >-
+      Potential evapotranspiration is the amount of evaporation that would occur 
+      if a sufficient water source were available
+      scrapped by ScrapePotentialEvapotranspiration Task.
+    format: GeoTIFF
+    variables:
+      - name: potential evapotranspiration
+        description: >-
+          amount of evaporation that would occur if a sufficient water source were available.
+        standard_variables:
+        metadata:
+          unit: mm
+    example:
+      uri: "http://thredds.northwestknowledge.net:8080/thredds/catalog/TERRACLIMATE_ALL/data/catalog.html"
+  - name: available water capacity
+    description: >-
+      Available water capacity is the amount of water that can be stored in a 
+      soil profile and be available for growing crops.
+    format: GeoTIFF
+    variables:
+      - name: awc
+        description: >-
+          Amount of water that can be stored in a soil profile and be available for growing crops.
+        standard_variables:
+        metadata:
+          unit: mm
+    example:
+      uri: "https://data.kimetrica.com/dataset/3b1f9aa8-8920-4c03-92c2-79f5b44c5df1/resource/d84bbb3c-9f9f-45ec-aa55-cb1f11941efc"
+outputs:
+  - name: "output/final/spi_{hash}.tiff"
+    description: >-
+      A Geojson file for Standardized Precipitation Index (SPI)
+      aggregated at admin level triggered by
+      ConvertStandardizedPrecipitationIndexToGeojson Task.
+    format: GeoJSON
+    variables:
+      - name: spi
+        description: >-
+          Average Standardized Precipitation Index (SPI).
+        standard_variables:
+        metadata:
+          unit:
+      - name: start
+        description: >-
+          start date time string for that month (useful for interactive map).
+        standard_variables:
+        metadata:
+          unit:
+      - name: end
+        description: >-
+          end date time string for that month (useful for interactive map).
+        standard_variables:
+        metadata:
+          unit:
+  - name: "output/final/spei_{hash}.tiff"
+    description: >-
+      A Geojson file for Standardized Precipitation-Evapotranspiration Index (SPEI)
+      aggregated at admin level triggered by
+      StandardizedPrecipitationEvapotranspirationIndexGeojson Task.
+    format: GeoJSON
+    variables:
+      - name: spei
+        description: >-
+          Average Standardized Precipitation-Evapotranspiration Index (SPEI).
+        standard_variables:
+        metadata:
+          unit:
+      - name: start
+        description: >-
+          start date time string for that month (useful for interactive map).
+        standard_variables:
+        metadata:
+          unit:
+      - name: end
+        description: >-
+          end date time string for that month (useful for interactive map).
+        standard_variables:
+        metadata:
+          unit:
+  - name: "output/final/scpdsi_{hash}.tiff"
+    description: >-
+      A Geojson file for Self-calibrated Palmer Drought Severity Index (scPDSI)
+      aggregated at admin level triggered by
+      ConvertPalmerDroughtIndicesToGeoJSON Task.
+    format: GeoJSON
+    variables:
+      - name: scpdsi
+        description: >-
+          Average Self-calibrated Palmer Drought Severity Index (scPDSI).
+        standard_variables:
+        metadata:
+          unit:
+      - name: start
+        description: >-
+          start date time string for that month (useful for interactive map).
+        standard_variables:
+        metadata:
+          unit:
+      - name: end
+        description: >-
+          end date time string for that month (useful for interactive map).
+        standard_variables:
+        metadata:
+          unit:
+  - name: "output/final/pdsi_{hash}.tiff"
+    description: >-
+      A Geojson file for Palmer Drought Severity Index (PDSI)
+      aggregated at admin level triggered by
+      ConvertPalmerDroughtIndicesToGeoJSON Task.
+    format: GeoJSON
+    variables:
+      - name: pdsi
+        description: >-
+          Average Palmer Drought Severity Index (PDSI).
+        standard_variables:
+        metadata:
+          unit:
+      - name: start
+        description: >-
+          start date time string for that month (useful for interactive map).
+        standard_variables:
+        metadata:
+          unit:
+      - name: end
+        description: >-
+          end date time string for that month (useful for interactive map).
+        standard_variables:
+        metadata:
+          unit:
+  - name: "output/final/phdi_{hash}.tiff"
+    description: >-
+      A Geojson file for Palmer Hydrological Drought Index (PHDI)
+      aggregated at admin level triggered by
+      ConvertPalmerDroughtIndicesToGeoJSON Task.
+    format: GeoJSON
+    variables:
+      - name: phdi
+        description: >-
+          Average Palmer Hydrological Drought Index (PHDI).
+        standard_variables:
+        metadata:
+          unit:
+      - name: start
+        description: >-
+          start date time string for that month (useful for interactive map).
+        standard_variables:
+        metadata:
+          unit:
+      - name: end
+        description: >-
+          end date time string for that month (useful for interactive map).
+        standard_variables:
+        metadata:
+          unit:
+  - name: "output/final/pmdi_{hash}.tiff"
+    description: >-
+      A Geojson file for Modified Palmer Drought Severity Index (PMDI)
+      aggregated at admin level triggered by
+      ConvertPalmerDroughtIndicesToGeoJSON Task.
+    format: GeoJSON
+    variables:
+      - name: pmdi
+        description: >-
+          Average Modified Palmer Drought Severity Index (PMDI).
+        standard_variables:
+        metadata:
+          unit:
+      - name: start
+        description: >-
+          start date time string for that month (useful for interactive map).
+        standard_variables:
+        metadata:
+          unit:
+      - name: end
+        description: >-
+          end date time string for that month (useful for interactive map).
+        standard_variables:
+        metadata:
+          unit:
+  - name: "output/final/zindex_{hash}.tiff"
+    description: >-
+      A Geojson file for Palmer moisture anomaly index (Z-index)
+      aggregated at admin level triggered by
+      ConvertPalmerDroughtIndicesToGeoJSON Task.
+    format: GeoJSON
+    variables:
+      - name: zindex
+        description: >-
+          Average Palmer moisture anomaly index (Z-index).
+        standard_variables:
+        metadata:
+          unit:
+      - name: start
+        description: >-
+          start date time string for that month (useful for interactive map).
+        standard_variables:
+        metadata:
+          unit:
+      - name: end
+        description: >-
+          end date time string for that month (useful for interactive map).
+        standard_variables:
+        metadata:
+          unit:
+parameters:
+  - name: admin_level
+    description: >-
+      Set the spatial resolution of non-gridded outputs by administrative
+      boundaries.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - admin0
+        - admin1
+        - admin2
+    default: admin2
+  - name: country_level
+    description: >-
+      Set the spatial extent of outputs to a country.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - South Sudan
+        - Ethiopia
+    default: South Sudan
+  - name: time
+    description: >-
+      The time window, or temporal extent, of outputs as a date range
+      (excluding the end date).
+    metadata:
+      type: TimeParameter
+    default: 2017-01-01-2017-06-01
+  - name: geography
+    description: >-
+      The area of interest, or spatial extent of outputs, as a GeoJSON object.
+    metadata:
+      type: GeoParameter
+    default: >-
+      {
+        "coordinates":
+          [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+        "type": "Polygon",
+      }
+  - name: rainfall_scenario
+    description: >-
+      Use current rainfall data or use a scenario based on deviations
+      from monthly averages.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - "normal"
+        - "mean"
+        - "low"
+        - "high"
+    default: "normal"
+  - name: rainfall_scenario_time
+    description: >-
+      The selected time window in which a rainfall scenario is applied.
+    metadata:
+      type: TimeParameter
+    default: 2017-05-01-2017-05-02
+  - name: rainfall_scenario_geography
+    description: >-
+      The geographical area affected by the rainfall scenario parameter.
+    metadata:
+      type: GeoParameter
+    default: >-
+      {
+        "coordinates":
+          [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+        "type": "Polygon",
+      }

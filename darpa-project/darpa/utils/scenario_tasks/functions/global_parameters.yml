@@ -1,0 +1,90 @@
+# Copy the relevant parameters into a model's YAML documentation.
+# The structure for each entry is
+# - name:
+#   description:
+#   metadata:
+#   [
+#     type:
+#   |
+#     type: ChoiceParameter
+#     choices:
+#   ]
+#   default:
+#   [minimum:]
+#   [maximum:]
+#
+# The `type` value must be one of the following types:
+# - NumberParameter (float or integer)
+# - ChoiceParameter
+# - TimeParameter
+# - GeoParameter
+# - StringParameter
+
+parameters:
+  - name: admin_level
+    description: >-
+      Set the spatial resolution of non-gridded outputs by administrative
+      boundaries.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - admin0
+        - admin1
+        - admin2
+    default: admin2
+  - name: country_level
+    description: >-
+      Set the spatial extent of outputs to a country.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - South Sudan
+        - Ethiopia
+    default: South Sudan
+  - name: time
+    description: >-
+      The time window, or temporal extent, of outputs as a date range
+      (excluding the end date).
+    metadata:
+      type: TimeParameter
+    default: 2017-01-01-2017-06-01
+  - name: geography
+    description: >-
+      The area of interest, or spatial extent of outputs, as a GeoJSON object.
+    metadata:
+      type: GeoParameter
+    default: >-
+      {
+        "coordinates":
+          [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+        "type": "Polygon",
+      }
+  - name: rainfall_scenario
+    description: >-
+      Use current rainfall data or use a scenario based on deviations
+      from monthly averages.
+    metadata:
+      type: ChoiseParameter
+      choices:
+        - "normal"
+        - "mean"
+        - "low"
+        - "high"
+    default: "normal"
+  - name: rainfall_scenario_time
+    description: >-
+      The selected time window in which a rainfall scenario is applied.
+    metadata:
+      type: TimeParameter
+    default: 2017-05-01-2017-05-02
+  - name: rainfall_scenario_geography
+    description: >-
+      The geographical area affected by the rainfall scenario parameter.
+    metadata:
+      type: GeoParameter
+    default: >-
+      {
+        "coordinates":
+          [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+        "type": "Polygon",
+      }

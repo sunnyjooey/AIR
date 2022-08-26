@@ -1,0 +1,46 @@
+[core]
+cache_dir=/tmp/data
+local_scheduler=True
+log_level=DEBUG
+timeout=10  # seconds
+log_file_path=log/logging.conf
+
+[ckan]
+address=https://data.kimetrica.com
+username=kiluigi
+password=ui4Mah5Keez5eo6eiShu
+check_for_updates_every=24000
+api_key=123abc
+timeout=24000
+
+[kiluigi.targets.IntermediateTarget]
+backend_class=kiluigi.targets.ExpiringLocalTarget
+root_path=output/intermediate
+
+[kiluigi.targets.FinalTarget]
+backend_class=kiluigi.targets.LocalTarget
+root_path=output/final
+
+[CalculateTotalRations]
+duration: 30
+food_basket: {"maize": {"calories_per_100g": 365,
+                        "contrib": 0.65},
+              "beans": {"calories_per_100g": 337,
+                        "contrib": 0.15},
+              "vegetable_oil": {"calories_per_100g": 862,
+                                "contrib": 0.20}}
+
+
+[PlotMalnutritionData]
+year=2017
+
+[CalculateInterventionCost]
+year=2017
+coverage_rate=1.0
+intervention_type=Cash Transfer
+duration_days=365
+household_size=6
+
+
+
+

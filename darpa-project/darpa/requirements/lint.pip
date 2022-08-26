@@ -1,0 +1,6 @@
+# Installing only lint requirements here, so we can install them quickly in CI.
+# Installing from this file in CI will prevent different versions being used
+# locally and in CI
+black==19.10b0
+flake8==3.8.1
+flake8-bandit==2.1.2

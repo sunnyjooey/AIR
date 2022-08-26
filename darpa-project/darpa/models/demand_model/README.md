@@ -1,0 +1,1 @@
+This model calculates food group demands based on the outputs of the market price model and the Economic model. The task `CreateCaloricNeedsSurface` will deposit raster files into the directory, and the terminal task `CaloricNeedsGeojson` generates the .geojson files for the caloric deficit calculation for each time point.

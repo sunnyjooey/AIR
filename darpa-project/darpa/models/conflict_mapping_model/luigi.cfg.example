@@ -1,0 +1,15 @@
+[core]
+local_scheduler=True
+timeout=10  # seconds
+cache_dir={INSERT_CACE_DIRECTORY}
+log_file_path={INSERT_LOG_FILE_PATH- should be home_dir/logging/logging.conf}
+
+[ckan]
+username={INSERT_USERNAME}
+password={INSERT_PASSWORD}
+address=https://data.kimetrica.com
+check_for_updates_every=300
+cache_dir={INSERT_CACHE_DIRECTORY}
+
+[paths]
+acled_data={INSERT_DATA_FILE_PATH}

@@ -1,0 +1,278 @@
+id: RiverDischargeModel
+name: River Discharge Model
+maintainer:
+  - name: Peter Mburu
+    email: peter.mburu@kimetrica.com
+author:
+  - name: Peter Mburu
+    email: peter.mburu@kimetrica.com
+version: 0.1.0
+description: >-
+  The River Discharge Model predicts river discharge in m3 per second. The model
+  also extimate flood extent matching predicted river discharge with return periods.
+  The return periods are calculated by fitting river discharge annual maxima 
+  from 1981 to 2016 in gumbel distribution.
+  The input data is mostly from European Centre for Medium-Range Weather Forecasts (ECMWF) 
+  and is accessed using CDS api.To use the API one need to add USER ID (UID) and key to the `.env`. 
+  To get the UID and key first create and account [here](https://cds.climate.copernicus.eu/user/register/) 
+  and visit [here](https://cds.climate.copernicus.eu/user/) to get the UID and the key. The model output
+  is available as TIFF formatted raster files and JSON.
+inputs:
+  - name: ERA5 hourly data on single levels
+    description: >-
+      ERA5 is the fifth generation ECMWF atmospheric reanalysis of the global climate.
+      Reanalysis combines model data with observations from across the world into a 
+      globally complete and consistent dataset using the laws of physics.
+    format: NetCDF
+    variables:
+      - name: Large Scale precipitation
+        description: >-
+          The total amount of water accumulated over a particular time period in meters.
+        standard_variables:
+        metadata:
+          unit: m
+      - name: Convective precipitation
+        description: >-
+          The totak amount of water accumulated over a particular time period in meters.
+        standard_variables:
+        metadata:
+          unit: m
+      - name: Volumetric soil water layer 1
+        description: >-
+          The volume of water in soil layer 1 (0 - 7cm, the surface is at 0cm).
+        standard_variables:
+        metadata:
+          unit: m 3 m-3
+      - name: Volumetric soil water layer 2
+        description: >-
+          The volume of water in soil layer 2 (7 - 28cm, the surface is at 0cm).
+        standard_variables:
+        metadata:
+          unit: m 3 m-3
+      - name: Runoff
+        description: >-
+          Runoff is a measure of the availability of water in the soil.
+        standard_variables:
+        metadata:
+          unit: m
+      - name: Total column water vapour
+        description: >-
+          Total amount of water vapour in a column extending from the surface 
+          of the Earth to the top of the atmosphere.
+        standard_variables:
+        metadata:
+          unit: kg m-2
+    example:
+      uri: "https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=form"
+  - name: ERA5 hourly data on 500, 700 and 850 pressure levels
+    description: >-
+      Variables produced at surface and on model levels interpolated at pressure levels.
+    format: NetCDF
+    variables:
+      - name: geopotential
+        description: >-
+          The gravitational potential energy of a unit mass, at a particular location, 
+          relative to mean sea level.
+        standard_variables:
+        metadata:
+          unit: m 2 m -2
+    variables:
+      - name: temperature
+        description: >-
+          The temperature in the atmosphere.
+        standard_variables:
+        metadata:
+          unit: K
+    variables:
+      - name: specific humidity
+        description: >-
+          The mass of water vapour per kilogram of moist air.
+        standard_variables:
+        metadata:
+          unit: kg kg-1
+    example:
+      uri: "https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-pressure-levels?tab=form"
+  - name: cems-glofas-historical
+    description: >-
+      Contains global modelled daily data of river discharge from the 
+      Global Flood Awareness System (GloFAS), which is part of the 
+      Copernicus Emergency Management Service (CEMS).
+    format: NetCDF
+    variables:
+      - name: river discharge
+        description: >-
+          Volume rate of water flow, including sediments, chemical and biological 
+          material, in the river channel averaged over a time step through a cross-section.
+        standard_variables:
+        metadata:
+          unit: m 3 s -1
+      - name: upstream area
+        description: >-
+          Upstream area for the point in the river network.
+        standard_variables:
+        metadata:
+          unit: m 2
+    example:
+      uri: "https://cds.climate.copernicus.eu/cdsapp#!/dataset/cems-glofas-historical?tab=form"
+  - name: digital elevation model
+    description: >-
+      Raster files whose value is elevation in meters.
+    format: GeoTIFF
+    variables:
+      - name: digital elevation model
+        description: >-
+          Elevation in meters.
+        standard_variables:
+    example:
+      uri: "https://data.kimetrica.com/dataset/f25f2152-e999-415f-956f-3a7c2eb2b723/resource/8cdbc26c-cf9f-4107-a405-d4e4e1777631/download/dem_east_africa_1km_res.tif"
+    source:   
+outputs:
+  - name: "output/final_targets/river_discharge_{hash}.nc"
+    description: >-
+      Netcdf of river discharge triggered by
+      PredictRiverDisharge Task
+    format: NetCDF
+    variables:
+      - name: dis
+        description: >-
+          Daily river discharge in meter cubed per second.
+        standard_variables:
+        metadata:
+          unit: m 3 s-1  
+  - name: "output/final_targets/river_discharge_{self.task_id}.parquet.gzip"
+    description: >-
+      Parquet of river discharge triggered by
+      RiverDischargeToParquet Task
+    format: parquet
+    variables:
+      - name: river_discharge
+        description: River discharge in m 3 s-1.
+      - name: date
+        description: Date of the output.
+      - name: lat
+        description: Latitude of the output.
+      - name: lon
+        description: Longitude of the output.  
+  - name: "output/final_targets/flood_extent_{hash}.nc"
+    description: >-
+      Netcdf of river flooding extent triggered by
+      RiverFlooding Task
+    format: NetCDF
+    variables:
+      - name: flood
+        description: >-
+          Flood extent estimated by thresholding river discharge.
+        standard_variables:
+        metadata:
+  - name: "output/final_targets/river_flooding_{self.task_id}.parquet.gzip"
+    description: >-
+      Parquet of river flooding extent triggered by
+      RiverFloodingToParquet Task
+    format: parquet
+    variables:
+      - name: flood
+        description: Flood is binary variable, the value is 1 if there is flood else 0.
+      - name: date
+        description: Date of the output
+      - name: lat
+        description: Latitude of the output
+      - name: lon
+        description: Longitude of the output
+        
+parameters:
+  - name: admin_level
+    description: >-
+      Set the spatial resolution of non-gridded outputs by administrative
+      boundaries.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - admin0
+        - admin1
+        - admin2
+    default: admin2
+  - name: country_level
+    description: >-
+      Set the spatial extent of outputs to a country.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - South Sudan
+        - Ethiopia
+    default: South Sudan
+  - name: time
+    description: >-
+      The time window, or temporal extent, of outputs as a date range
+      (excluding the end date).
+    metadata:
+      type: TimeParameter
+    default: 2017-01-01-2017-06-01
+  - name: geography
+    description: >-
+      The area of interest, or spatial extent of outputs, as a GeoJSON object.
+    metadata:
+      type: GeoParameter
+    default: >-
+      {
+        "coordinates":
+          [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+        "type": "Polygon",
+      }
+  - name: rainfall_scenario
+    description: >-
+      Use current rainfall data or use a scenario based on deviations
+      from monthly averages.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - "normal"
+        - "mean"
+        - "low"
+        - "high"
+    default: "normal"
+  - name: rainfall_scenario_time
+    description: >-
+      The selected time window in which a rainfall scenario is applied.
+    metadata:
+      type: TimeParameter
+    default: 2017-05-01-2017-05-02
+  - name: rainfall_scenario_geography
+    description: >-
+      The geographical area affected by the rainfall scenario parameter.
+    metadata:
+      type: GeoParameter
+    default: >-
+      {
+        "coordinates":
+          [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+        "type": "Polygon",
+      }
+  - name: return_period_threshold
+    description: >-
+      The return period used to estimate flood extent.
+    metadata:
+      type: IntParameter
+    default: 5
+  - name: temperature_scenario
+    description: >-
+      Temperature perturbation value the unit is in Kelvin.
+    metadata:
+      type: FloatParameter
+    default: 0
+  - name: temperature_scenario_time
+    description: >-
+      The selected time window in which a temperature scenario is applied.
+    metadata:
+      type: TimeParameter
+    default: 2017-05-01-2017-05-02
+  - name: temperature_scenario_geography
+    description: >-
+      The geographical area affected by the temperature scenario parameter.
+    metadata:
+      type: GeoParameter
+    default: >-
+      {
+        "coordinates":
+          [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+        "type": "Polygon",
+      }

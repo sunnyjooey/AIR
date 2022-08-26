@@ -1,0 +1,13 @@
+# Test dependencies go here.
+-r lint.pip
+
+behave==1.2.6
+coverage==4.5.1
+factory-boy==2.11.1
+mypy==0.560
+PyHamcrest==1.9.0
+pytest==4.5.0  # https://github.com/pytest-dev/pytest
+pytest-cov==2.7.1
+pytest-django==3.4.8
+safety==1.8.4
+wheel==0.33.1

@@ -1,0 +1,16 @@
+venv/*
+.ipynb_checkpoints/*
+.elasticbeanstalk/*
+archive/*
+evaluation_results/*
+*.csv
+*.mp3
+*.wav
+.gitignore
+*.ipynb
+__pycache__/*
+from_linux/*
+metadata/*
+archive/*
+mel_spec_test/*
+temp/*

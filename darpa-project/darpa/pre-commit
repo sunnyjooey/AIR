@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+"""git pre-commit hook that will reject commits with unformatted .py files.
+
+We could let black check the whole source code, but to allow incremental updating of
+unformatted files we will only reject unformatted files that are staged for commit.
+"""
+import os
+import shlex
+import subprocess  # noqa: S404
+import sys
+
+# calling git diff to identify the files which are staged for commit
+# check_output returns a bytestring, so we have to decode to str
+staged_files_return = subprocess.run(  # noqa: S603
+    shlex.split("git diff --cached --name-only"),
+    stdout=subprocess.PIPE,
+    encoding="UTF-8",
+)
+files_to_check = [
+    path
+    for path in staged_files_return.stdout.splitlines()
+    if
+    # only process files that exist, otherwise black will fail
+    # when we delete a .py file
+    path.endswith(".py") and os.path.exists(path)
+]
+
+try:
+    # we have to pass multiple files as list items
+    cmd = ["black", "--check"] + files_to_check
+    subprocess.run(  # noqa: S603
+        cmd, check=True, stderr=subprocess.PIPE, encoding="UTF-8"
+    )
+except subprocess.CalledProcessError as exc:
+    sys.exit(
+        (
+            f"Unformatted Python source files staged. Commit rejected, you have to "
+            f"run black on these files:\n{exc.stderr}"
+        )
+    )
+
+try:
+    subprocess.run(  # noqa: S603,S607
+        ["flake8"], check=True, stdout=subprocess.PIPE, encoding="UTF-8"
+    )
+except subprocess.CalledProcessError as exc:
+    sys.exit(f"flake8 returned errors:\n{exc.output}")

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="wrapper">
+
+    <!-- Sidebar -->
+    <div class="sidebar col-sm-2">
+      <ul>
+        <li><a href="{{ url_for('analysis_emotion', file_key = file_key) }}">Emotional Support</a></li><br/>
+        <li><a href="{{ url_for('analysis_organization',file_key = file_key) }}">Classroom Organization</a></li><br/>
+        <li><a href="{{ url_for('analysis_instruction',file_key = file_key) }}">Instructional Support</a></li><br/>
+      </ul>
+    </div>
+
+    <!-- Page Content -->
+    <div class="side-content col-sm-10">
+       Click on one of the domains to see results.
+    </div>
+
+</div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block content %}
+    <input type="hidden" id="fileKey" value="{{ file_key }}">
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <div class="sidebar col-sm-2">
+            <ul>
+                <li><a href="{{ url_for('analysis_emotion',file_key = file_key) }}">Emotional Support</a></li>
+                <br/>
+                <li><a href="{{ url_for('analysis_organization',file_key = file_key) }}">Classroom Organization</a></li>
+                <br/>
+                <li><a class="active" href="{{ url_for('analysis_instruction',file_key = file_key) }}">Instructional
+                    Support</a></li>
+                <br/>
+            </ul>
+        </div>
+
+        <!-- Content -->
+        <div class="side-content col-sm-10">
+            <div class="row" style="font-size:30px; text-align:center">
+                {{ class_info.Teacher }}'s Grade {{ class_info.Grade }} {{ class_info.Subject }} Class
+                on {{ class_info.Date }}
+            </div>
+            <!-- Column 1 -->
+            <div class="col-sm-6">
+                <div class="row box">
+                    <span style="font-size: 40px; font-weight: bold"> {{ word_count }} </span>
+                    <br>
+                    <span> Unique Words Used </span>
+                </div>
+                <div class="row" style="margin-top:50px; margin-bottom:50px;">
+                    <center>
+                        <div id="chart_jargon">
+                        </div>
+                    </center>
+                </div>
+
+                <!-- Word cloud -->
+                <div class="row">
+                    <center>
+                        <div class="chart-title"> Words Used in Class</div>
+                        <div id="word_cloud">
+                        </div>
+                    </center>
+                </div>
+            </div>
+
+            <!-- Column 2 -->
+            <div class="col-sm-6">
+                <div class="row box">
+                    <span style="font-size: 40px; font-weight: bold"> {{ question_count }} </span>
+                    <br>
+                    <span> Question(s) Asked </span>
+                </div>
+                <div class="row">
+                    <center>
+                        <div id="chart_question">
+                        </div>
+                    </center>
+                </div>
+                <br>
+                <div class="row box">
+                    <span style="font-size: 40px; font-weight: bold"> {{ word_speed }} </span>
+                    <br>
+                    <span> Words Per Minute </span>
+                </div>
+                <div class="row">
+                    <center>
+                        <div id="chart_speed">
+                        </div>
+                        <center>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- D3.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <script type="text/javascript">
+        var graph_speed = {{graphJSON_speed | safe}};
+        Plotly.plot('chart_speed', graph_speed.data, graph_speed.layout);
+
+        var graph_jargon = {{graphJSON_jargon | safe}};
+        Plotly.plot('chart_jargon', graph_jargon.data, graph_jargon.layout);
+
+        var graph_question = {{graphJSON_question | safe}};
+        Plotly.plot('chart_question', graph_question.data, graph_question.layout);
+    </script>
+
+    <!-- here we included our word_cloud.js -->
+    <script type="text/javascript" src="{{ url_for('static', filename='js/word_cloud.js') }}"></script>
+{% endblock %}
+

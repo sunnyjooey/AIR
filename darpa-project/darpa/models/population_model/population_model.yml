@@ -1,0 +1,135 @@
+description: |-
+  The population model for South Sudan is grounded on a method called Component Analysis (or Component Method) 1, which takes into account Crude Birth Rates (CBR), Crude Death Rates (CDR), and migration rates (inmigration and outmigration). Any of these rates may change in a linear or non-linear fashion. In the equation, death/birth_rate fct is applied to the nominal growth rates. It is used for sensitivity studies of changes in the growth rate. For example, if one uses a birth_rate_fct of 0.1 this will boost the nominal growth rates by 10%. These variables are put in place to account for any possible bias in the census data.
+  The input variables taken into consideration are:
+    - Year
+    - Crude Birth Rates (CBR), South Sudan
+    - Crude Death Rates (CDR), South Sudan
+    - Inmigration, South Sudan
+    - Outmigration, South Sudan
+    - birth_rate_fct, South Sudan
+    - death_rate_fct, South Sudan
+    - projected population number, Ethiopia
+    - REF_PROJ_CONFIG_ETH (transform key value is unique to each country!)
+  Currently the input data are raw .csv files containing census data and growth rate values, along with population density raster files.
+  The granularity and layout of the input data differ depending on the country. For example, the dataset for Ethiopia have population projection values from UNFPA (United Nations Population Funds), and does not have growth rate values (birth, death rates).
+  A data warehouse will be designed to hold preprocessed, cleaned up data aggregated from the raw .csv files
+
+input_files:
+  - name: census dataset (SSD)
+    description: preprocessed census dataset for South Sudan (.csv)
+    uri: https://data.kimetrica.com/dataset/79e631b6-86f2-4fc8-8054-31c17eac1e3f/resource/81df7a5f-1b24-41d1-8f9c-0e67623d58a7
+  - name: census dataset (ETH)
+    description: preprocessed census dataset for Ethiopia (.csv)
+    uri: https://data.kimetrica.com/dataset/d85818ef-773b-4385-b116-6f172b6f2477/resource/b3955342-6c41-4b6b-9995-4f015490a3e3 (private)
+  - name: population density raster (SSD)
+    description: population density file for South Sudan (.tif)
+    uri: https://data.kimetrica.com/dataset/83a07464-6aa1-4611-8e51-d2e04c4a7b97/resource/6c50a83f-9154-4800-bc89-aab60ab1d535
+  - name: population density raster (ETH)
+    description: population density file for Ethiopia (.tif)
+    uri: https://data.kimetrica.com/dataset/11bd6b1e-6939-4f00-839d-fdff1a470dd1/resource/3ddfcc7d-2944-42e1-932e-6f412466cea2
+
+output_files:
+  # there will be multiple files for each unique year in the census data
+  - name: "{hash}/{yr}_{self.country_level}_hires_masked_pop.tiff"
+    description: |-
+      The geoTIFF files are created by HiResPopRasterMasked Task to return population numbers for each yearly timepoint. The output is 1km^2 masked hi-resolution raster. 
+      Band 1 corresponds to the total population, band 2 corresponds to the male population, and band 3 is the female population. 
+      The rest of the bands correspond to the different age group population projections.
+      -9999 is assigned to the pixel where the prediction is not availale or if the pixel falls outside of the geographical mask.
+    format: geoTIFF
+    metadata:
+      band_1: population_btotl
+      band_2: population_mtotl
+      band_3: population_ftotl
+      band_4: population_b0004
+      band_5: population_b0509
+      band_6: population_b1014
+      band_7: population_b1519
+      band_8: population_b2024
+      band_9: population_b2529
+      band_10: population_b3034
+      band_11: population_b3539
+      band_12: population_b4044
+      band_13: population_b4549
+      band_14: population_b5054
+      band_15: population_b5559
+      band_16: population_b6064
+      band_17: population_b6569
+      band_18: population_b7074
+      band_19: population_b7579
+      band_20: population_b8084
+      band_21: population_b8589
+      band_22: population_b9094
+      band_23: population_b95pl
+    variables:
+      - name:
+        description: pixel value corresponds to population estimate at 1km^2 grid cell.
+
+  - name: "{hash}/{yr}_{self.country_level}_{self.admin_level}_pop.geojson"
+    description: geojson file(s) created by pipeline triggered by RasterizedPopGeojson Task - one file for each year with year in file name.
+    metadata:
+    variables:
+      - name: population_{band}
+        description: population estimate from each demographic group in geojson key value pairs.
+      - name: geometry
+        description: polygon coordinates (WGS84)
+
+parameters:
+  - name: admin_level
+    description: Select source data at admin level?
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - admin0
+        - admin1
+        - admin2
+      default: admin2
+  - name: country_level
+    description: Select source data at country level?
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - South Sudan
+        - Ethiopia
+      default: South Sudan
+  - name: time
+    description: This is the time window the end user is interested in.
+    metadata:
+      type: DateIntervalParameter
+      # note: The end date is non-inclusive!
+      default: 2017-01-01-2017-06-01
+  - name: geography
+    description: This is the AOI that is applied broadly throughout the models, and is used as a mask for general geography filtering.
+    metadata:
+      type: GeoParameter
+      default:
+        {
+          "coordinates":
+            [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+          "type": "Polygon",
+        }
+  - name: rainfall_scenario
+    description: The rainfall scenario based on historical monthly average of the precipitation values. High value is estimated by 2x mean, and low value is estimated by 0.25x mean.This does not affect the population model.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - normal
+        - high
+        - low
+        - mean
+      default: normal
+  - name: rainfall_scenario_time
+    description: The selected time window in which rainfall_scenario is applied. This time interval must fall within time.
+    metadata:
+      type: DateIntervalParameter
+      default: 2017-05-01-2017-05-02
+  - name: rainfall_scenario_geography
+    description: The geography affected by the rainfall scenario parameter, this does not affect the population model.
+    metadata:
+      type: GeoParameter
+      default:
+        {
+          "coordinates":
+            [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+          "type": "Polygon",
+        }

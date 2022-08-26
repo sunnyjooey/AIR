@@ -1,0 +1,139 @@
+description: |-
+  The malnutrition model predicts the malnutrition rates for Global Acute Malnutrition (GAM) and Severe Acute Malnutrition (SAM).
+  According to World Health Organization (WHO) guideline, GAM and SAM are defined as weight-for-height z-score below -2, and weight-for-height z-score below -3, respectively. By this definition, GAM includes all categories of malnutrition.
+  The input variables taken into consideration are:
+    - CHIRPS
+    - Consumer Price Index(CPI)
+    - population
+    - cereal production per capita
+    - consumption expenditure
+    - Normalized Difference Vegetation Index (NDVI)
+    - month
+
+input_files:
+  description: This is the input dataframe used for model prediction.
+  metadata:
+  variables:
+    - name: CHIRPS(mm)_lag3
+      description: The CHIRPS data were obtained from the Early Warning eXplorer app hosted by Climate Hazards Group at UC Santa Barbara (.csv), there's a time lag of 3-month applied to this data.
+      uri: https://data.kimetrica.com/dataset/ca5e2bdb-b65d-47a6-83b9-025996108b39/resource/29d3a661-2e37-4ff9-8f72-4eb07f9057b7
+    - name: NDVI
+      description: NDVI data were obtained from the Early Warning eXplorer app hosted by Climate Hazards Group at UC Santa Barbara (.csv)
+      uri: https://data.kimetrica.com/dataset/ca5e2bdb-b65d-47a6-83b9-025996108b39/resource/8e3ab369-eac5-4e7c-9a27-505f7975112a
+    - name: CPI
+      description: Monthly CPI(2011-2018), a metric that reflects inflation,  is downloaded form CLiMIS database (.csv format).
+      uri: https://data.kimetrica.com/dataset/ca5e2bdb-b65d-47a6-83b9-025996108b39/resource/3eab2b23-bcd0-4d6f-9820-066ce3820b0b
+    - name: crop_per_capita
+      description: Yearly cereal production data from the CLiMIS database (.csv format), divided by population value (from the DARPA population model).
+    - name: Population
+      description: Yearly Population estimate came from Kimetrica's population model.
+    - name: med_exp
+      description: Consumption expenditure currently comes from a static raster file from the output of the house economic model (this might change in the future). It currently has no time dimension.
+    - name: Month
+      description: month of interest
+
+output_files:
+  - name: "{hash}/{time}_hires_masked_malnut.tiff"
+    description: |-
+        The geoTIFF files are created by HiResRasterMasked Task to return number of malnutrition cases for each monthly timepoint for baseline values and rainfall scenario values. The output is 1km^2 masked hi-resolution raster.
+        -9999 is assigned to the pixel where the prediction is not availale or if the pixel falls outside of the geographical mask
+
+    format: geoTIFF
+    metadata:
+      band_1: GAM_cases_baseline
+      band_2: GAM_cases_scenario
+    variables:
+      - name:
+        description: pixel value corresponds to predicted number of malnutrition cases (GAM,SAM).
+
+  - name: "output/final/malnutrition_{hash}.geojson"
+    description: |-
+        The geojson file from task MalnutritionInferenceGeoJSON converts the output of task MalnutInference to geojson format across the time interval specified by the user in GlobalParameter.time. This corresponds to number of malnutrition cases on the admin2 level at monthly timepoint.
+    format: geoJSON
+    metadata:
+    variables:
+        - name: gam_rate
+          description: The rate of malnutrition GAM as defined by weight-for-height z-score below -2 in sub-population of age <= 5.
+        - name: gam_number
+          description: The number of malnutrition GAM cases as defined by weight-for-height z-score below -2 in sub-population of age <= 5.
+        - name: gam_scenario
+          description: The number of malnutrition GAM cases in scenario (e.g. high rainfall) as defined by weight-for-height z-score below -2 in sub-population of age <= 5.
+        - name: admin1
+          description: adminstrative level 1 of coverage.
+        - name: admin2
+          description: adminstrative level 2 of coverage.
+        - name: Month
+          description: temporal resolution month.
+        - name: Year
+          description: temporal resolution Year.
+        - name: start
+          description: start date time string for that month (useful for interactive map).
+        - name: end
+          description: end date time string for that month (useful for interactive map).
+        - name: precipitation(mm)
+          description: precipitation value from chirps.
+        - name: precipitation(mm)_scenario
+          description: precipitation value from rainfall scenario, derived from the the long term mean of CHIRPS multiply by a coefficient.
+        - name: geometry
+          description: polygon coordinates (WGS84)
+
+parameters:
+  - name: admin_level
+    description: Select source data at admin level?
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - admin0
+        - admin1
+        - admin2
+
+      default: admin2
+  - name: country_level
+    description: Select source data at country level?
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - South Sudan
+        - Ethiopia
+      default: South Sudan
+  - time:
+    description: This is the time window the end user is interested in.
+    metadata:
+      type: DateIntervalParameter
+      # note: The end date is non-inclusive!
+      default: 2017-01-01-2017-06-01
+  - geography:
+    description: This is the AOI that is applied broadly throughout the models, and is used as a mask for general geography filtering.
+    metadata:
+      type: GeoParameter
+      default:
+        {
+          "coordinates":
+            [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+          "type": "Polygon",
+        }
+  - rainfall_scenario:
+    description: The rainfall scenario based on historical monthly average of the precipitation values. High value is estimated by 2x mean, and low value is estimated by 0.25x mean.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - normal
+        - high
+        - low
+        - mean
+      default: normal
+  - rainfall_scenario_time:
+    description: The selected time window in which rainfall_scenario is applied. This time interval must fall within time.
+    metadata:
+      type: DateIntervalParameter
+      default: 2017-05-01-2017-05-02
+  - rainfall_scenario_geography:
+    description: The geography affected by the rainfall scenario parameter.
+    metadata:
+      type: GeoParameter
+      default:
+        {
+          "coordinates":
+            [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+          "type": "Polygon",
+        }

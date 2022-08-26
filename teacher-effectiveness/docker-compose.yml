@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    image: teacher-effectiveness-app:v1
+    environment:
+      - FLASK_ENV=private #set to public to hide /register and /upload endpoints
+    ports:
+      - "5000:5000"
+    tty: true

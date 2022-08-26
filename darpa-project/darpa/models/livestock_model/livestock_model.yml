@@ -1,0 +1,306 @@
+id: LivestockModel
+name: Livestock Model
+maintainer:
+  - name: Eric Muchugu
+    email: eric.muchugu@kimetrica.com
+  - name: Peter Mburu
+    email: peter.mburu@kimetrica.com
+author:
+  - name: Eric Muchugu
+    email: eric.muchugu@kimetrica.com
+  - name: Peter Mburu
+    email: peter.mburu@kimetrica.com
+version: 0.1.0
+description: >-
+  The model estimate spatially disaggregated livestock densities at a monthly timestep 
+  by comparing modeled forage productivity in the absence of grazing to observed 
+  vegetation detected by the remotely sensed index. With this estimated livestock density 
+  and climate inputs, the model predicts the combined impacts of livestock management 
+  and climate in controlling rangeland condition and livestock diet sufficiency.
+
+inputs:
+  - name: bulk density
+    description: >-
+      Bulk density of the soil fine earth (measured by core method) in kg / cubic-meter (kg/m3) at depth 0-5 cm.
+    format: GeoTIFF
+    variables:
+      - name: bulk_density
+        description: >-
+          Bulk density is an indicator of soil compaction.
+        standard_variables:
+        metadata:
+          unit: kg/m3
+    example:
+      uri: "https://data.kimetrica.com/dataset/livestock-model/resource/af387b7f-f555-463e-b035-cd653623ac37"
+  - name: Soil pH
+    description: >-
+      Soil pH is a measure of the acidity or alkalinity of a soil.
+    format: GeoTIFF
+    variables:
+      - name: pH
+        description: >-
+          Soil pH measured at depth 0-5 cm.
+        standard_variables:
+    example:
+      uri: "https://data.kimetrica.com/dataset/livestock-model/resource/73e873f2-353c-4395-8dae-7e41ef2d3faa"
+  - name: Soil sand content
+    description: >-
+      Fraction of soil particles that are sand.
+    format: GeoTIFF
+    variables:
+      - name: sand_content
+        description: >-
+          Fraction of soil particles that are sand at depth 0-5 cm.
+        standard_variables:
+        metadata:
+          unit: g/100g
+    example:
+      uri: "https://data.kimetrica.com/dataset/livestock-model/resource/cc512e0b-a9a8-4ade-ba72-529705236251"   
+  - name: Soil silt content
+    description: >-
+      Fraction of soil particles that are silt.
+    format: GeoTIFF
+    variables:
+      - name: silt_content
+        description: >-
+          Fraction of soil particles that are silt at depth 0-5 cm.
+        standard_variables:
+        metadata:
+          unit: g/100g
+    example:
+      uri: "https://data.kimetrica.com/dataset/livestock-model/resource/517ffa0e-c4bc-4a9a-bc36-a21f7abfdc38"
+  - name: Soil clay content
+    description: >-
+      Fraction of soil particles that are clay.
+    format: GeoTIFF
+    variables:
+      - name: clay_content
+        description: >-
+          Fraction of soil particles that are clay at depth 0-5 cm.
+        standard_variables:
+        metadata:
+          unit: g/100g
+    example:
+      uri: "https://data.kimetrica.com/dataset/livestock-model/resource/7516d70e-8726-4900-8231-0a45944944b3"
+  - name: Minimum temperature
+    description: >-
+      Monthly average minimum daily temperature.
+    format: GeoTIFF
+    variables:
+      - name: minimum_temperature
+        description: >-
+          Monthly minimum temperature from january to december.
+        standard_variables:
+        metadata:
+          unit: degree Celsius
+    example:
+      uri: "https://data.kimetrica.com/dataset/century-test-data/resource/db78aafa-d11d-43b0-8ba9-5d4f0367517d"      
+  - name: Maximum temperature
+    description: >-
+      Monthly average maximum daily temperature.
+    format: GeoTIFF
+    variables:
+      - name: maximum_temperature
+        description: >-
+          Monthly maximum temperature from january to december.
+        standard_variables:
+        metadata:
+          unit: degree Celsius
+    example:
+      uri: "https://data.kimetrica.com/dataset/century-test-data/resource/fb582299-ecd4-4080-954e-d877a49cfb5b" 
+  - name: Monthly precipitation
+    description: >-
+      CHIRPS monthly precipitation.
+    format: GeoTIFF
+    variables:
+      - name: monthly_precipitation
+        description: >-
+          CHIRPS monthly precipitation.
+        standard_variables:
+        metadata:
+          unit: mm
+    example:
+      uri: "https://data.chc.ucsb.edu/products/CHIRPS-2.0/africa_monthly/tifs/" 
+  - name: Vegetation index
+    description: >-
+      Monthly vegetation index.
+    format: GeoTIFF
+    variables:
+      - name: ndvi
+        description: >-
+          Monthly normalized difference vegetation index.
+        standard_variables:
+    example:
+      uri: "https://edcintl.cr.usgs.gov/downloads/sciweb1/shared/fews/web/africa/east/dekadal/emodis/ndvi_c6/temporallysmoothedndvi/downloads/monthly/" 
+  - name: Plant functional type fractional cover
+    description: >-
+      Plant functional types (PFTs) is a system  to classify plants according to their physical, phylogenetic and phenological characteristics.
+    format: GeoTIFF
+    variables:
+      - name: plant_functional_types
+        description: >-
+          Plant functional types (PFTs) derived from the ESA CCI Land Cover product.
+        standard_variables:
+    example:
+      uri: "https://data.kimetrica.com/dataset/livestock-model/resource/44d586c5-0bb1-4854-9a1f-ded333f148c0"
+  - name: Animal grazing areas
+    description: >-
+      A shapefile with the number of animal grazing in given polygon.
+    format: Shapefile
+    variables:
+      - name: num_animal
+        description: >-
+          Number of animal in a polygon.
+      - name: animal_id
+        description: >-
+          Id used get animal trait from animal trait csv file.
+        standard_variables:
+    example:
+      uri: "https://data.kimetrica.com/dataset/livestock-model/resource/5bc8778a-9173-4205-96f8-0013eb616729"  
+outputs:
+  - name: "output/final_targets/livestock_model/potential_biomass_{hash}.nc"
+    description: |-
+      NetCDF of variables related potential biomass triggered by
+      PotentialBiomass Task
+    format: NetCDF
+    variables:
+        - name: potential biomass
+          description: This is total potential modeled biomass in the absence of grazing.
+        - name: date
+          description: Month dimension.
+        - name: x
+          description: Longitude dimension.
+        - name: y
+          description: Latitude dimension.
+  - name: "output/final_targets/livestock_model/standing_biomass_{hash}.nc"
+    description: |-
+      NetCDF of variables related standing biomass triggered by
+      StandingBiomass Task
+    format: NetCDF
+    variables:
+        - name: standing biomass
+          description: This is total modeled biomass after offtake by grazing animals.
+        - name: date
+          description: Month dimension.
+        - name: x
+          description: Longitude dimension.
+        - name: y
+          description: Latitude dimension.
+  - name: "output/final_targets/livestock_model/animal_density_{hash}.nc"
+    description: |-
+      NetCDF of variables related animal density triggered by
+      AnimalDensity Task
+    format: NetCDF
+    variables:
+        - name: animal density
+          description: Distribution of animals inside grazing area polygons.
+        - name: date
+          description: Month dimension.
+        - name: x
+          description: Longitude dimension.
+        - name: y
+          description: Latitude dimension.
+  - name: "output/final_targets/livestock_model/diet_sufficiency_{hash}.nc"
+    description: |-
+      NetCDF of variables related diet sufficiency triggered by
+      DietSufficiency Task
+    format: NetCDF
+    variables:
+        - name: diet sufficiency
+          description: Ratio of metabolizable energy intake to maintenance energy requirements.
+        - name: date
+          description: Month dimension.
+        - name: x
+          description: Longitude dimension.
+        - name: y
+          description: Latitude dimension.
+          
+parameters:
+  - name: admin_level
+    description: Select source data at admin level.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - admin0
+        - admin1
+        - admin2
+
+      default: admin2
+  - name: country_level
+    description: Select source data at country level.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - South Sudan
+        - Ethiopia
+      default: South Sudan
+  - time:
+    description: This is the time window the end user is interested in.
+    metadata:
+      type: DateIntervalParameter
+      # note: The end date is non-inclusive!
+      default: 2017-01-01-2017-06-01
+  - geography:
+    description: This is the AOI that is applied broadly throughout the models, and is used as a mask for general geography filtering.
+    metadata:
+      type: GeoParameter
+      default:
+        {
+          "coordinates":
+            [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+          "type": "Polygon",
+        }
+  - rainfall_scenario:
+    description: The rainfall scenario based on historical monthly average of the precipitation values. High value is estimated by 2x mean, and low value is estimated by 0.25x mean.
+    metadata:
+      type: ChoiceParameter
+      choices:
+        - normal
+        - high
+        - low
+        - mean
+      default: normal
+  - rainfall_scenario_time:
+    description: The selected time window in which rainfall_scenario is applied. This time interval must fall within time.
+    metadata:
+      type: DateIntervalParameter
+      default: 2017-05-01-2017-05-02
+  - rainfall_scenario_geography:
+    description: The geography affected by the rainfall scenario parameter.
+    metadata:
+      type: GeoParameter
+      default:
+        {
+          "coordinates":
+            [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+          "type": "Polygon",
+        }
+  - management_threshold:
+    description: Restrict biomass intake by livestock.
+    metadata:
+      unit: kg/ha
+      type: FloatParameter
+      default: 0.0
+  - name: temperature_scenario
+    description: >-
+      Temperature perturbation value the unit is in Kelvin.
+    metadata:
+      type: FloatParameter
+    default: 0
+  - name: temperature_scenario_time
+    description: >-
+      The selected time window in which a temperature scenario is applied.
+    metadata:
+      type: TimeParameter
+    default: 2017-05-01-2017-05-02
+  - name: temperature_scenario_geography
+    description: >-
+      The geographical area affected by the temperature scenario parameter.
+    metadata:
+      type: GeoParameter
+    default: >-
+      {
+        "coordinates":
+          [[[23, 12.5], [23, 2], [36, 2], [36, 12.5], [23, 12.5]]],
+        "type": "Polygon",
+      }
